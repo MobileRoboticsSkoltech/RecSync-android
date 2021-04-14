@@ -7,7 +7,7 @@
 
 ## TODOs:
     - Get the correct config for S10e
-
+    - Log synchronized timestamps on all devices
 # Wireless Software Synchronization of Multiple Distributed Cameras
 
 Reference code for the paper
