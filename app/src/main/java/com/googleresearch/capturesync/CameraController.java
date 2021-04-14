@@ -16,6 +16,7 @@
 
 package com.googleresearch.capturesync;
 
+import android.annotation.SuppressLint;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraCaptureSession.CaptureCallback;
 import android.hardware.camera2.CameraCharacteristics;
@@ -30,6 +31,8 @@ import android.view.Surface;
 import com.googleresearch.capturesync.ImageMetadataSynchronizer.CaptureRequestTag;
 import com.googleresearch.capturesync.softwaresync.TimeDomainConverter;
 import com.googleresearch.capturesync.softwaresync.TimeUtils;
+
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,13 +81,14 @@ public class CameraController {
    * ImageReader for the yuv stream and stream frames to it. If {@code viewfinderSurface} is not
    * null, it will stream frames to it.
    */
+  @SuppressLint("DefaultLocale")
   public CameraController(
-      CameraCharacteristics cameraCharacteristics,
-      Size rawImageResolution,
-      Size yuvImageResolution,
-      PhaseAlignController phaseAlignController,
-      MainActivity context,
-      TimeDomainConverter timeDomainConverter) {
+          CameraCharacteristics cameraCharacteristics,
+          Size rawImageResolution,
+          Size yuvImageResolution,
+          PhaseAlignController phaseAlignController,
+          MainActivity context,
+          TimeDomainConverter timeDomainConverter) {
 
     imageThread = new HandlerThread("ImageThread");
     imageThread.start();
@@ -95,75 +99,86 @@ public class CameraController {
     syncHandler = new Handler(syncThread.getLooper());
 
     resultProcessor =
-        new ResultProcessor(
-            timeDomainConverter, context, Constants.SAVE_JPG_FROM_YUV, Constants.JPG_QUALITY);
+            new ResultProcessor(
+                    timeDomainConverter, context, Constants.SAVE_JPG_FROM_YUV, Constants.JPG_QUALITY);
 
     imageReaders = new ArrayList<>();
     final int imageBuffer = 1;
     if (rawImageResolution != null) {
       imageReaders.add(
-          ImageReader.newInstance(
-              rawImageResolution.getWidth(),
-              rawImageResolution.getHeight(),
-              ImageFormat.RAW10,
-              imageBuffer));
+              ImageReader.newInstance(
+                      rawImageResolution.getWidth(),
+                      rawImageResolution.getHeight(),
+                      ImageFormat.RAW10,
+                      imageBuffer));
     }
 
     if (yuvImageResolution != null) {
       imageReaders.add(
-          ImageReader.newInstance(
-              yuvImageResolution.getWidth(),
-              yuvImageResolution.getHeight(),
-              ImageFormat.YUV_420_888,
-              imageBuffer));
+              ImageReader.newInstance(
+                      yuvImageResolution.getWidth(),
+                      yuvImageResolution.getHeight(),
+                      ImageFormat.YUV_420_888,
+                      imageBuffer));
     }
 
     imageMetadataSynchronizer = new ImageMetadataSynchronizer(imageReaders, imageHandler);
     imageMetadataSynchronizer.registerCallback(
-        output -> {
-          CaptureResult result = output.result;
-          Object userTag = CaptureRequestTag.getUserTag(result);
-          if (userTag != null && userTag.equals(PhaseAlignController.INJECT_FRAME)) {
-            Log.v(TAG, "Skipping phase align injection frame.");
-            output.close();
-            return;
-          }
+            output -> {
+              CaptureResult result = output.result;
+              Object userTag = CaptureRequestTag.getUserTag(result);
+              if (userTag != null && userTag.equals(PhaseAlignController.INJECT_FRAME)) {
+                Log.v(TAG, "Skipping phase align injection frame.");
+                output.close();
+                return;
+              }
 
-          int sequenceId = result.getSequenceId();
-          long synchronizedTimestampNs =
-              timeDomainConverter.leaderTimeForLocalTimeNs(
-                  result.get(CaptureResult.SENSOR_TIMESTAMP));
+              int sequenceId = result.getSequenceId();
+              long synchronizedTimestampNs =
+                      timeDomainConverter.leaderTimeForLocalTimeNs(
+                              result.get(CaptureResult.SENSOR_TIMESTAMP));
 
-          double timestampMs = TimeUtils.nanosToMillis((double) synchronizedTimestampNs);
-          double frameDurationMs =
-              TimeUtils.nanosToMillis((double) result.get(CaptureResult.SENSOR_FRAME_DURATION));
+              double timestampMs = TimeUtils.nanosToMillis((double) synchronizedTimestampNs);
+              double frameDurationMs =
+                      TimeUtils.nanosToMillis((double) result.get(CaptureResult.SENSOR_FRAME_DURATION));
 
-          long phaseNs = phaseAlignController.updateCaptureTimestamp(synchronizedTimestampNs);
-          double phaseMs = TimeUtils.nanosToMillis((double) phaseNs);
-
-          Log.v(
-              TAG,
-              String.format(
-                  "onCaptureCompleted: timestampMs = %,.3f, frameDurationMs = %,.6f, phase ="
-                      + " %,.3f, sequence id = %d",
-                  timestampMs, frameDurationMs, phaseMs, sequenceId));
-
-          if (shouldSaveFrame(synchronizedTimestampNs)) {
-            Log.d(TAG, "Sync frame found! Committing and processing");
-            Frame frame = new Frame(result, output);
-            resultProcessor.submitProcessRequest(frame, goalOutputDirName);
-            resetGoal();
-          } else {
-            output.close();
-          }
-        },
-        syncHandler);
+              long phaseNs = phaseAlignController.updateCaptureTimestamp(synchronizedTimestampNs);
+              double phaseMs = TimeUtils.nanosToMillis((double) phaseNs);
+//
+//          Log.v(
+//              TAG,
+//              String.format(
+//                  "onCaptureCompleted: timestampMs = %,.3f, frameDurationMs = %,.6f, phase ="
+//                      + " %,.3f, sequence id = %d",
+//                  timestampMs, frameDurationMs, phaseMs, sequenceId));
+              // TODO: log this to csv
+//              try {
+//                synchronized(this) {
+//
+////                  if (context.getLogger() != null && !context.getLogger().isClosed()) {
+////                    context.getLogger().logLine(String.format("%d,%d,%d",
+////                            synchronizedTimestampNs, context.isVideoRecording() ? 1 : 0, context.getCurSequence()));
+////                  }
+//                }
+//              } catch (IOException e) {
+//                e.printStackTrace();
+//              }
+              if (shouldSaveFrame(synchronizedTimestampNs)) {
+                Log.d(TAG, "Sync frame found! Committing and processing");
+                Frame frame = new Frame(result, output);
+                resultProcessor.submitProcessRequest(frame, goalOutputDirName);
+                resetGoal();
+              } else {
+                output.close();
+              }
+            },
+            syncHandler);
   }
 
   /* Check if given timestamp is or passed goal timestamp in the synchronized leader time domain. */
   private boolean shouldSaveFrame(long synchronizedTimestampNs) {
     return goalSynchronizedTimestampNs != 0
-        && synchronizedTimestampNs >= goalSynchronizedTimestampNs;
+            && synchronizedTimestampNs >= goalSynchronizedTimestampNs;
   }
 
   private void resetGoal() {
@@ -213,9 +228,9 @@ public class CameraController {
     goalOutputDirName = getTimeStr(desiredSynchronizedCaptureTimeNs);
     goalSynchronizedTimestampNs = desiredSynchronizedCaptureTimeNs;
     Log.i(
-        TAG,
-        String.format(
-            "Request sync still at %d to %s", goalSynchronizedTimestampNs, goalOutputDirName));
+            TAG,
+            String.format(
+                    "Request sync still at %d to %s", goalSynchronizedTimestampNs, goalOutputDirName));
   }
 
   private String getTimeStr(long timestampNs) {

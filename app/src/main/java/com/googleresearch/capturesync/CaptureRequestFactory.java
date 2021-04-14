@@ -50,12 +50,60 @@ public class CaptureRequestFactory {
    * viewfinder.
    */
   public CaptureRequest.Builder makePreview(
-      Surface viewfinderSurface,
-      List<Surface> imageSurfaces,
-      long sensorExposureTimeNs,
-      int sensorSensitivity)
-      throws CameraAccessException {
+          Surface viewfinderSurface,
+          List<Surface> imageSurfaces,
+          long sensorExposureTimeNs,
+          int sensorSensitivity,
+          boolean wantAutoExp)
+          throws CameraAccessException {
 
+    CaptureRequest.Builder builder = device.createCaptureRequest(TEMPLATE_PREVIEW);
+    if (wantAutoExp) {
+      builder.set(CONTROL_AE_MODE, CONTROL_AWB_MODE_AUTO);
+
+    } else {
+      // Manually set exposure and sensitivity using UI sliders on the leader.
+      builder.set(CONTROL_AE_MODE, CONTROL_AE_MODE_OFF);
+      builder.set(SENSOR_EXPOSURE_TIME, sensorExposureTimeNs);
+      builder.set(SENSOR_SENSITIVITY, sensorSensitivity);
+    }
+
+    // Auto white balance used, these could be locked and sent from the leader instead.
+    builder.set(CONTROL_AWB_MODE, CONTROL_AWB_MODE_AUTO);
+
+    // Auto focus is used since different devices may have different manual focus values.
+    builder.set(CONTROL_AF_MODE, CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+
+    if (viewfinderSurface != null) {
+      builder.addTarget(viewfinderSurface);
+    }
+    List<Integer> targetIndices = new ArrayList<>();
+    for (int i = 0; i < imageSurfaces.size(); i++) {
+      builder.addTarget(imageSurfaces.get(i));
+      targetIndices.add(i);
+    }
+    builder.setTag(new CaptureRequestTag(targetIndices, null));
+    return builder;
+  }
+
+  /**
+   * Experimental MROB. Creates builder for video request
+   */
+  public CaptureRequest.Builder makeVideo(
+          Surface recorderSurface,
+          Surface viewfinderSurface,
+          List<Surface> imageSurfaces,
+          long sensorExposureTimeNs,
+          int sensorSensitivity,
+          boolean wantAutoExp)
+          throws CameraAccessException {
+    CaptureRequest.Builder builder = makePreview(viewfinderSurface, imageSurfaces, sensorExposureTimeNs, sensorSensitivity, wantAutoExp);
+    // Add recorder surface
+    if (recorderSurface != null) {
+      builder.addTarget(recorderSurface);
+    }
+    return builder;
+/*
     CaptureRequest.Builder builder = device.createCaptureRequest(TEMPLATE_PREVIEW);
     // Manually set exposure and sensitivity using UI sliders on the leader.
     builder.set(CONTROL_AE_MODE, CONTROL_AE_MODE_OFF);
@@ -77,11 +125,12 @@ public class CaptureRequestFactory {
       targetIndices.add(i);
     }
     builder.setTag(new CaptureRequestTag(targetIndices, null));
-    return builder;
+    return builder;*/
   }
 
+
   public CaptureRequest.Builder makeFrameInjectionRequest(
-      long desiredExposureTimeNs, List<Surface> imageSurfaces) throws CameraAccessException {
+          long desiredExposureTimeNs, List<Surface> imageSurfaces) throws CameraAccessException {
     CaptureRequest.Builder builder = device.createCaptureRequest(TEMPLATE_PREVIEW);
     builder.set(CONTROL_MODE, CONTROL_MODE_AUTO);
     builder.set(CONTROL_AE_MODE, CONTROL_AE_MODE_OFF);

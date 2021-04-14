@@ -100,10 +100,12 @@ public class SoftwareSyncController implements Closeable {
       if (localAddress.equals(leaderAddress)) {
         Log.d(TAG, "Leader == Local Address");
         isLeader = true;
-      } else if (localAddress.equals(InetAddress.getByName("0.0.0.0"))) {
-        Log.d(TAG, "Leader == 0.0.0.0");
+      } else if (localAddress.equals(InetAddress.getByName("192.168.1.75"))) {
+//        Log.d(TAG, "Leader == 0.0.0.0");
+        // TODO: hotspot patch
         isLeader = true;
       }
+//        isLeader = true;
 
       Log.w(
           TAG,
@@ -128,8 +130,11 @@ public class SoftwareSyncController implements Closeable {
         payload -> {
           Log.v(TAG, "Setting next trigger to" + payload);
           upcomingTriggerTimeNs = Long.valueOf(payload);
+          // TODO: (MROB) change to video
           context.setUpcomingCaptureStill(upcomingTriggerTimeNs);
         });
+
+    // TODO: (MROB) add stop video message
 
     sharedRpcs.put(
         METHOD_DO_PHASE_ALIGN,
