@@ -34,8 +34,11 @@ import android.hardware.camera2.CameraDevice.StateCallback;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.CamcorderProfile;
+import android.media.MediaRecorder;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
@@ -55,14 +58,20 @@ import android.widget.Toast;
 import com.googleresearch.capturesync.softwaresync.SoftwareSyncLeader;
 import com.googleresearch.capturesync.softwaresync.TimeUtils;
 import com.googleresearch.capturesync.softwaresync.phasealign.PhaseConfig;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -74,6 +83,8 @@ public class MainActivity extends Activity {
 
   // Phase config file to use for phase alignment, configs are located in the raw folder.
   private final int phaseConfigFile = R.raw.pixel3_phaseconfig;
+  private final MediaRecorder mMediaRecorder = new MediaRecorder();
+  private boolean isVideoRecording = false;
 
   // Camera controls.
   private HandlerThread cameraThread;
@@ -144,6 +155,7 @@ public class MainActivity extends Activity {
   private PhaseAlignController phaseAlignController;
   private int numCaptures;
   private Toast latestToast;
+  private File mCurrentFile;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -321,7 +333,16 @@ public class MainActivity extends Activity {
 
       captureStillButton.setOnClickListener(
           view -> {
-            if (cameraController.getOutputSurfaces().isEmpty()) {
+            if (isVideoRecording) {
+              stopVideo();
+              Toast.makeText(this, "Stopped recording video with " + mMediaRecorder, Toast.LENGTH_LONG).show();
+            } else {
+              // MROB Experimental - start recording video
+              startVideo();
+              Toast.makeText(this, "Started recording video with " + mMediaRecorder, Toast.LENGTH_LONG).show();
+
+            }
+/*            if (cameraController.getOutputSurfaces().isEmpty()) {
               Log.e(TAG, "No output surfaces found.");
               Toast.makeText(this, R.string.error_msg_no_outputs, Toast.LENGTH_LONG).show();
               return;
@@ -344,7 +365,7 @@ public class MainActivity extends Activity {
             ((SoftwareSyncLeader) softwareSyncController.softwareSync)
                 .broadcastRpc(
                     SoftwareSyncController.METHOD_SET_TRIGGER_TIME,
-                    String.valueOf(futureTimestamp));
+                    String.valueOf(futureTimestamp));*/
           });
 
       phaseAlignButton.setOnClickListener(
@@ -774,6 +795,95 @@ public class MainActivity extends Activity {
     } catch (CameraAccessException e) {
       Log.w(TAG, "Unable to create preview.");
     }
+  }
+
+  /**
+   * Create directory and return file
+   * returning video file
+   */
+  private File getOutputMediaFile() {
+    // External sdcard file location
+    File mediaStorageDir = new File(Environment.getExternalStorageDirectory(),
+            "MROB_VID");
+    // Create storage directory if it does not exist
+    if (!mediaStorageDir.exists()) {
+      if (!mediaStorageDir.mkdirs()) {
+        Log.d(TAG, "Oops! Failed create "
+                + "MROB_VID" + " directory");
+        return null;
+      }
+    }
+    String timeStamp;
+    timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss",
+            Locale.getDefault()).format(new Date());
+    File mediaFile;
+    mediaFile = new File(mediaStorageDir.getPath() + File.separator
+            + "VID_" + timeStamp + ".mp4");
+    return mediaFile;
+  }
+
+  private void setUpMediaRecorder() throws IOException {
+    mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+    mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+    /*
+     * create video output file
+     */
+    mCurrentFile = getOutputMediaFile();
+    /*
+     * set output file in media recorder
+     */
+    mMediaRecorder.setOutputFile(mCurrentFile.getAbsolutePath());
+    CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P);
+    mMediaRecorder.setVideoSize(profile.videoFrameWidth, profile.videoFrameHeight);
+    mMediaRecorder.setVideoEncodingBitRate(profile.videoBitRate);
+    mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+//    int rotation = getWindowManager().getDefaultDisplay().getRotation();
+/*    switch (mSensorOrientation) {
+      case SENSOR_ORIENTATION_INVERSE_DEGREES:
+        mMediaRecorder.setOrientationHint(INVERSE_ORIENTATIONS.get(rotation));
+        break;
+    }*/
+    mMediaRecorder.prepare();
+  }
+
+  private void startVideo() {
+    Log.d(TAG, "Starting video.");
+    try {
+      // MROB. Added MediaRecorder surface
+      setUpMediaRecorder();
+      Log.d(TAG, "MediaRecorder surface " + mMediaRecorder.getSurface());
+      CaptureRequest.Builder previewRequestBuilder =
+              cameraController
+                      .getRequestFactory()
+                      .makeVideo(
+                              mMediaRecorder.getSurface(),
+                              viewfinderSurface,
+                              cameraController.getOutputSurfaces(),
+                              currentSensorExposureTimeNs,
+                              currentSensorSensitivity);
+
+      captureSession.stopRepeating();
+
+      mMediaRecorder.start();
+      captureSession.setRepeatingRequest(
+              previewRequestBuilder.build(),
+              cameraController.getSynchronizerCaptureCallback(),
+              cameraHandler);
+      // Start MediaRecorder
+      isVideoRecording = true;
+    } catch (CameraAccessException e) {
+      Log.w(TAG, "Unable to create video request.");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void stopVideo() {
+    // Switch to preview again
+    mMediaRecorder.stop();
+    mMediaRecorder.reset();
+    startPreview();
+    isVideoRecording = false;
   }
 
   private void stopPreview() {
