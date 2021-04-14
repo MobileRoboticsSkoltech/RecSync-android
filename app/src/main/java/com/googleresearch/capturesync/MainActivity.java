@@ -474,49 +474,6 @@ public class MainActivity extends Activity {
         }
     }
 
-
-    private void exp(boolean wantAutoExp, int expLenMs, String curTimeStamp) {
-        try {
-//      startPreview(wantAutoExp);
-            this.runOnUiThread(
-                    () -> Toast.makeText(
-                            this, "Getting data for " + expLenMs / 1000 + " seconds", Toast.LENGTH_SHORT
-                    ).show()
-            );
-////      String suffix = (wantAutoExp) ? "_AE" : "_manual";
-//      String suffix = "_"  + expLenMs / 1000;
-//      String filename = curTimeStamp + suffix + ".csv";
-//      // Creates frame timestamps logger
-////      mLogger = new CSVLogger(SUBDIR_NAME, filename);
-
-            // 2nd stage
-            Thread.sleep(STATIC_LEN);
-            this.runOnUiThread(
-                    () -> Toast.makeText(
-                            this,
-                            "Starting " + expLenMs / 1000 + "s. video..",
-                            Toast.LENGTH_SHORT).show()
-            );
-            startVideo(wantAutoExp);
-
-            // finish experiment
-            Thread.sleep(expLenMs);
-//      this.runOnUiThread(
-//              () -> Toast.makeText(
-//                    this,
-//                    "Saved to sdcard",
-//                    Toast.LENGTH_SHORT).show()
-//      );
-            stopVideo();
-
-            curSequence += 1;
-//      mLogger.close();
-//      mLogger = null;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void startSoftwareSync() {
         // Start softwaresync, close it first if it's already running.
         if (softwareSyncController != null) {
