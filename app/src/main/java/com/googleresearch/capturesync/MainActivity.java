@@ -20,6 +20,7 @@ import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
@@ -36,6 +37,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.CamcorderProfile;
 import android.media.MediaCodec;
 import android.media.MediaRecorder;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -351,11 +353,20 @@ public class MainActivity extends Activity {
                     view -> {
                         if (isVideoRecording) {
                             stopVideo();
+                            ((SoftwareSyncLeader) softwareSyncController.softwareSync)
+                                    .broadcastRpc(
+                                            SoftwareSyncController.METHOD_STOP_RECORDING,
+                                            "0");
                             Toast.makeText(this, "Stopped recording video with " + mMediaRecorder, Toast.LENGTH_LONG).show();
                         } else {
                             startVideo(false);
+                            ((SoftwareSyncLeader) softwareSyncController.softwareSync)
+                                    .broadcastRpc(
+                                            SoftwareSyncController.METHOD_START_RECORDING,
+                                            "0");
                             Toast.makeText(this, "Started recording video with " + mMediaRecorder, Toast.LENGTH_LONG).show();
                         }
+
 /*            if (cameraController.getOutputSurfaces().isEmpty()) {
               Log.e(TAG, "No output surfaces found.");
               Toast.makeText(this, R.string.error_msg_no_outputs, Toast.LENGTH_LONG).show();
@@ -381,6 +392,7 @@ public class MainActivity extends Activity {
                     SoftwareSyncController.METHOD_SET_TRIGGER_TIME,
                     String.valueOf(futureTimestamp));*/
                     });
+
 
             phaseAlignButton.setOnClickListener(
                     view -> {
@@ -520,8 +532,8 @@ public class MainActivity extends Activity {
             Log.e(
                     TAG,
                     "Couldn't start SoftwareSync due to " + e + ", requesting user pick a wifi network.");
-//      finish(); // Close current app, expect user to restart.
-//      startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
+      finish(); // Close current app, expect user to restart.
+      startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
         }
     }
 
@@ -592,8 +604,9 @@ public class MainActivity extends Activity {
         } else {
             throw new IllegalStateException("Viewfinder unavailable!");
         }
+        // TODO: max
         viewfinderResolution =
-                Collections.max(Arrays.asList(viewfinderOutputSizes), new CompareSizesByArea());
+                Collections.min(Arrays.asList(viewfinderOutputSizes), new CompareSizesByArea());
 
         Size[] rawOutputSizes = scm.getOutputSizes(ImageFormat.RAW10);
 //    if (rawOutputSizes != null) {
@@ -615,7 +628,8 @@ public class MainActivity extends Activity {
         } else {
             Log.i(TAG, "YUV unavailable!");
         }
-        yuvImageResolution = Collections.max(Arrays.asList(yuvOutputSizes), new CompareSizesByArea());
+        // TODO: max
+        yuvImageResolution = Collections.min(Arrays.asList(yuvOutputSizes), new CompareSizesByArea());
         Log.i(TAG, "Chosen viewfinder resolution: " + viewfinderResolution);
 //    Log.i(TAG, "Chosen raw resolution: " + rawImageResolution);
         Log.i(TAG, "Chosen yuv resolution: " + yuvImageResolution);
@@ -937,7 +951,7 @@ public class MainActivity extends Activity {
         return recorder;
     }
 
-    private void startVideo(boolean wantAutoExp) {
+    public void startVideo(boolean wantAutoExp) {
         Log.d(TAG, "Starting video.");
 
         isVideoRecording = true;
@@ -970,7 +984,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void stopVideo() {
+    public void stopVideo() {
         // Switch to preview again
         mMediaRecorder.stop();
 

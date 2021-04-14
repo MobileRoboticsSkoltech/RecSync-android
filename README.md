@@ -1,3 +1,13 @@
+# Video modification
+
+## Main ideas:
+    - Triggering at some time in the future is no longer needed(?)
+    - New types of RPCs: start and stop video
+    - ... profit!
+
+## TODOs:
+    - Get the correct config for S10e
+
 # Wireless Software Synchronization of Multiple Distributed Cameras
 
 Reference code for the paper

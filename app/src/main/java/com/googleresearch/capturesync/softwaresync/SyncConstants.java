@@ -55,6 +55,7 @@ public class SyncConstants {
   public static final int METHOD_MSG_SYNCING = 1_104;
   public static final int METHOD_MSG_OFFSET_UPDATED = 1_105;
 
+
   /** Clock Sync - Simple Network Time Protocol (SNTP). */
   public static final int SNTP_PORT = 9428;
   public static final int SNTP_BUFFER_SIZE = 512;
