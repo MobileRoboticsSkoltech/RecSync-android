@@ -26,6 +26,9 @@ import android.media.ImageReader;
 import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
+
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -382,6 +385,12 @@ public class ImageMetadataSynchronizer {
             synchronized (ImageMetadataSynchronizer.this) {
               handleCaptureResultLocked(result);
             }
+          }
+
+          @Override
+          public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session, int sequenceId, long frameNumber) {
+            super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
+            Log.v(TAG, "YAAAY I've completed succesfully");
           }
         };
   }

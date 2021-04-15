@@ -86,6 +86,12 @@ public class MainActivity extends Activity {
     //  private static final int EXP_LEN = 20_000;
     private static final int STATIC_LEN = 15_000;
 
+    public int getLastVideoSeqId() {
+        return lastVideoSeqId;
+    }
+
+    private int lastVideoSeqId;
+
     public int getCurSequence() {
         return curSequence;
     }
@@ -911,12 +917,14 @@ public class MainActivity extends Activity {
     public void startVideo(boolean wantAutoExp) {
         Log.d(TAG, "Starting video.");
 
+
+
         isVideoRecording = true;
         try {
             mMediaRecorder = setUpMediaRecorder(surface);
             mMediaRecorder.prepare();
             Log.d(TAG, "MediaRecorder surface " + surface);
-            CaptureRequest.Builder previewRequestBuilder =
+            CaptureRequest.Builder videoRequestBuilder =
                     cameraController
                             .getRequestFactory()
                             .makeVideo(
@@ -930,8 +938,8 @@ public class MainActivity extends Activity {
             captureSession.stopRepeating();
 
             mMediaRecorder.start();
-            captureSession.setRepeatingRequest(
-                    previewRequestBuilder.build(),
+            lastVideoSeqId = captureSession.setRepeatingRequest(
+                    videoRequestBuilder.build(),
                     cameraController.getSynchronizerCaptureCallback(),
                     cameraHandler);
         } catch (CameraAccessException e) {
