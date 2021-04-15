@@ -122,7 +122,7 @@ public class CameraController {
                       imageBuffer));
     }
 
-    imageMetadataSynchronizer = new ImageMetadataSynchronizer(imageReaders, imageHandler);
+    imageMetadataSynchronizer = new ImageMetadataSynchronizer(imageReaders, imageHandler, context);
     imageMetadataSynchronizer.registerCallback(
             output -> {
               CaptureResult result = output.result;

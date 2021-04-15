@@ -128,6 +128,7 @@ public class ImageMetadataSynchronizer {
   // instances of ImageReader on behalf of the caller.
   // TODO(jiawen): wrap ImageMetadataSynchronizer-owned images in an interface that's not closeable.
   private static final String TAG = "ImageMetadataSynchronizer";
+  private final MainActivity context;
 
   /**
    * To use {@link ImageMetadataSynchronizer}, each {@link CaptureRequest} must be tagged with an
@@ -291,9 +292,9 @@ public class ImageMetadataSynchronizer {
    * <p>Callback.onDataAvailable() is called with Image's in the same order as imageReaders.
    */
   @SuppressWarnings("JdkObsolete")
-  public ImageMetadataSynchronizer(List<ImageReader> imageReaders, Handler imageHandler) {
+  public ImageMetadataSynchronizer(List<ImageReader> imageReaders, Handler imageHandler, MainActivity context) {
     closed = false;
-
+    this.context = context;
     createCaptureCallback();
 
     this.imageReaders.addAll(imageReaders);
@@ -391,6 +392,11 @@ public class ImageMetadataSynchronizer {
           public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session, int sequenceId, long frameNumber) {
             super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
             Log.v(TAG, "YAAAY I've completed succesfully");
+            if (sequenceId == context.getLastVideoSeqId() && context.getLogger() != null) {
+               context.getLogger().close();
+               context.setLogger(null);
+               context.setVideoRecording(false);
+            }
           }
         };
   }

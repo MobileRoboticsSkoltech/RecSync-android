@@ -57,6 +57,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.googleresearch.capturesync.softwaresync.CSVLogger;
 import com.googleresearch.capturesync.softwaresync.SoftwareSyncLeader;
 import com.googleresearch.capturesync.softwaresync.TimeUtils;
 import com.googleresearch.capturesync.softwaresync.phasealign.PhaseConfig;
@@ -76,6 +77,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -85,16 +87,26 @@ public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     //  private static final int EXP_LEN = 20_000;
     private static final int STATIC_LEN = 15_000;
+    private String lastTimeStamp;
 
     public int getLastVideoSeqId() {
         return lastVideoSeqId;
     }
 
     private int lastVideoSeqId;
-
     public int getCurSequence() {
         return curSequence;
     }
+
+    public void setLogger(CSVLogger mLogger) {
+        this.mLogger = mLogger;
+    }
+
+    public CSVLogger getLogger() {
+        return mLogger;
+    }
+
+    private CSVLogger mLogger;
 
     private int curSequence;
 
@@ -346,14 +358,14 @@ public class MainActivity extends Activity {
         }
     }
 
-  /* Set up UI controls and listeners based on if device is currently a leader of client. */
-  private void setLeaderClientControls(boolean isLeader) {
-    if (isLeader) {
-      // Leader, all controls visible and set.
-      captureStillButton.setVisibility(View.VISIBLE);
-      phaseAlignButton.setVisibility(View.VISIBLE);
-      exposureSeekBar.setVisibility(View.VISIBLE);
-      sensitivitySeekBar.setVisibility(View.VISIBLE);
+    /* Set up UI controls and listeners based on if device is currently a leader of client. */
+    private void setLeaderClientControls(boolean isLeader) {
+        if (isLeader) {
+            // Leader, all controls visible and set.
+            captureStillButton.setVisibility(View.VISIBLE);
+            phaseAlignButton.setVisibility(View.VISIBLE);
+            exposureSeekBar.setVisibility(View.VISIBLE);
+            sensitivitySeekBar.setVisibility(View.VISIBLE);
 
             captureStillButton.setOnClickListener(
                     view -> {
@@ -363,14 +375,13 @@ public class MainActivity extends Activity {
                                     .broadcastRpc(
                                             SoftwareSyncController.METHOD_STOP_RECORDING,
                                             "0");
-                            Toast.makeText(this, "Stopped recording video with " + mMediaRecorder, Toast.LENGTH_LONG).show();
+
                         } else {
                             startVideo(false);
                             ((SoftwareSyncLeader) softwareSyncController.softwareSync)
                                     .broadcastRpc(
                                             SoftwareSyncController.METHOD_START_RECORDING,
                                             "0");
-                            Toast.makeText(this, "Started recording video with " + mMediaRecorder, Toast.LENGTH_LONG).show();
                         }
 
 /*            if (cameraController.getOutputSurfaces().isEmpty()) {
@@ -495,8 +506,8 @@ public class MainActivity extends Activity {
             Log.e(
                     TAG,
                     "Couldn't start SoftwareSync due to " + e + ", requesting user pick a wifi network.");
-      finish(); // Close current app, expect user to restart.
-      startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
+            finish(); // Close current app, expect user to restart.
+            startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
         }
     }
 
@@ -558,8 +569,10 @@ public class MainActivity extends Activity {
                 cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
         // We always capture the viewfinder. Its resolution is special: it's set chosen in Constants.
-        Size[] viewfinderOutputSizes = scm.getOutputSizes(SurfaceTexture.class);
-        if (viewfinderOutputSizes != null) {
+        List<Size> viewfinderOutputSizes = Arrays.stream(scm.getOutputSizes(SurfaceTexture.class)).filter(
+                size -> size.getHeight() <= 1920 && size.getWidth() <= 1080
+        ).collect(Collectors.toList());
+        if (viewfinderOutputSizes.size() != 0) {
             Log.i(TAG, "Available viewfinder resolutions:");
             for (Size s : viewfinderOutputSizes) {
                 Log.i(TAG, s.toString());
@@ -569,7 +582,7 @@ public class MainActivity extends Activity {
         }
         // TODO: max
         viewfinderResolution =
-                Collections.min(Arrays.asList(viewfinderOutputSizes), new CompareSizesByArea());
+                Collections.max(viewfinderOutputSizes, new CompareSizesByArea());
 
         Size[] rawOutputSizes = scm.getOutputSizes(ImageFormat.RAW10);
 //    if (rawOutputSizes != null) {
@@ -582,8 +595,11 @@ public class MainActivity extends Activity {
 //    }
 //    rawImageResolution = Collections.max(Arrays.asList(rawOutputSizes), new CompareSizesByArea());
 
-        Size[] yuvOutputSizes = scm.getOutputSizes(ImageFormat.YUV_420_888);
-        if (yuvOutputSizes != null) {
+        CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+        List<Size> yuvOutputSizes = Arrays.stream(scm.getOutputSizes(ImageFormat.YUV_420_888)).filter(
+                size -> size.getHeight() <= profile.videoFrameHeight && size.getWidth() <= profile.videoFrameWidth
+        ).collect(Collectors.toList());
+        if (yuvOutputSizes.size() != 0) {
             Log.i(TAG, "Available YUV resolutions:");
             for (Size s : yuvOutputSizes) {
                 Log.i(TAG, s.toString());
@@ -591,8 +607,7 @@ public class MainActivity extends Activity {
         } else {
             Log.i(TAG, "YUV unavailable!");
         }
-        // TODO: max
-        yuvImageResolution = Collections.min(Arrays.asList(yuvOutputSizes), new CompareSizesByArea());
+        yuvImageResolution = Collections.max(yuvOutputSizes, new CompareSizesByArea());
         Log.i(TAG, "Chosen viewfinder resolution: " + viewfinderResolution);
 //    Log.i(TAG, "Chosen raw resolution: " + rawImageResolution);
         Log.i(TAG, "Chosen yuv resolution: " + yuvImageResolution);
@@ -866,10 +881,10 @@ public class MainActivity extends Activity {
 
         Path dir = Files.createDirectories(Paths.get(sdcard.getAbsolutePath(), SUBDIR_NAME, "VID"));
 
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss",
+        lastTimeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss",
                 Locale.getDefault()).format(new Date());
         String mediaFile;
-        mediaFile = dir.toString() + File.separator + "VID_" + timeStamp + ".mp4";
+        mediaFile = dir.toString() + File.separator + "VID_" + lastTimeStamp + ".mp4";
         return mediaFile;
 
     }
@@ -914,17 +929,31 @@ public class MainActivity extends Activity {
         return recorder;
     }
 
+    public void setVideoRecording(boolean videoRecording) {
+        isVideoRecording = videoRecording;
+    }
+
+    public boolean isVideoRecording() {
+        return isVideoRecording;
+    }
+
     public void startVideo(boolean wantAutoExp) {
         Log.d(TAG, "Starting video.");
-
-
+        Toast.makeText(this, "Started recording video", Toast.LENGTH_LONG).show();
 
         isVideoRecording = true;
         try {
             mMediaRecorder = setUpMediaRecorder(surface);
+            String filename = lastTimeStamp + ".csv";
+            // Creates frame timestamps logger
+            try {
+                mLogger = new CSVLogger(SUBDIR_NAME, filename, this);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             mMediaRecorder.prepare();
             Log.d(TAG, "MediaRecorder surface " + surface);
-            CaptureRequest.Builder videoRequestBuilder =
+            CaptureRequest.Builder previewRequestBuilder =
                     cameraController
                             .getRequestFactory()
                             .makeVideo(
@@ -938,8 +967,8 @@ public class MainActivity extends Activity {
             captureSession.stopRepeating();
 
             mMediaRecorder.start();
-            lastVideoSeqId = captureSession.setRepeatingRequest(
-                    videoRequestBuilder.build(),
+            captureSession.setRepeatingRequest(
+                    previewRequestBuilder.build(),
                     cameraController.getSynchronizerCaptureCallback(),
                     cameraHandler);
         } catch (CameraAccessException e) {
@@ -952,10 +981,12 @@ public class MainActivity extends Activity {
     public void stopVideo() {
         // Switch to preview again
         mMediaRecorder.stop();
-
+        Toast.makeText(this, "Stopped recording video", Toast.LENGTH_LONG).show();
+//        mLogger.close();
+//        mLogger = null;
         mMediaRecorder.reset();
         startPreview();
-        isVideoRecording = false;
+//        isVideoRecording = false;
     }
 
     private void stopPreview() {
