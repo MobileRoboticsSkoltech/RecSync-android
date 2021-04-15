@@ -89,11 +89,11 @@ public class MainActivity extends Activity {
     private static final int STATIC_LEN = 15_000;
     private String lastTimeStamp;
 
-    public int getLastVideoSeqId() {
+    public Integer getLastVideoSeqId() {
         return lastVideoSeqId;
     }
 
-    private int lastVideoSeqId;
+    private Integer lastVideoSeqId;
     public int getCurSequence() {
         return curSequence;
     }
@@ -116,7 +116,12 @@ public class MainActivity extends Activity {
 
     // Phase config file to use for phase alignment, configs are located in the raw folder.
     private final int phaseConfigFile = R.raw.pixel3_phaseconfig;
-    private MediaRecorder mMediaRecorder = new MediaRecorder();
+
+    public MediaRecorder getMediaRecorder() {
+        return mediaRecorder;
+    }
+
+    private MediaRecorder mediaRecorder = new MediaRecorder();
     private boolean isVideoRecording = false;
 
     // Camera controls.
@@ -943,7 +948,7 @@ public class MainActivity extends Activity {
 
         isVideoRecording = true;
         try {
-            mMediaRecorder = setUpMediaRecorder(surface);
+            mediaRecorder = setUpMediaRecorder(surface);
             String filename = lastTimeStamp + ".csv";
             // Creates frame timestamps logger
             try {
@@ -951,7 +956,7 @@ public class MainActivity extends Activity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            mMediaRecorder.prepare();
+            mediaRecorder.prepare();
             Log.d(TAG, "MediaRecorder surface " + surface);
             CaptureRequest.Builder previewRequestBuilder =
                     cameraController
@@ -966,8 +971,8 @@ public class MainActivity extends Activity {
 
             captureSession.stopRepeating();
 
-            mMediaRecorder.start();
-            captureSession.setRepeatingRequest(
+            mediaRecorder.start();
+            lastVideoSeqId = captureSession.setRepeatingRequest(
                     previewRequestBuilder.build(),
                     cameraController.getSynchronizerCaptureCallback(),
                     cameraHandler);
@@ -980,13 +985,9 @@ public class MainActivity extends Activity {
 
     public void stopVideo() {
         // Switch to preview again
-        mMediaRecorder.stop();
+
         Toast.makeText(this, "Stopped recording video", Toast.LENGTH_LONG).show();
-//        mLogger.close();
-//        mLogger = null;
-        mMediaRecorder.reset();
         startPreview();
-//        isVideoRecording = false;
     }
 
     private void stopPreview() {

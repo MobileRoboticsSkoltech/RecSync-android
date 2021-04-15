@@ -99,15 +99,15 @@ public class SoftwareSyncController implements Closeable {
             NetworkHelpers networkHelper = new NetworkHelpers(wifiManager);
             localAddress = NetworkHelpers.getIPAddress();
             // TODO: hotspot patch
-            leaderAddress = InetAddress.getByName("192.168.1.75");
+            leaderAddress = networkHelper.getHotspotServerAddress();
 
             // Note: This is a brittle way of checking leadership that may not work on all devices.
             // Leader only if it is the one with same IP address as the server, or a zero IP address.
             if (localAddress.equals(leaderAddress)) {
                 Log.d(TAG, "Leader == Local Address");
                 isLeader = true;
-            } else if (localAddress.equals(InetAddress.getByName("192.168.1.75"))) {
-//        Log.d(TAG, "Leader == 0.0.0.0");
+            } else if (localAddress.equals(InetAddress.getByName("0.0.0.0"))) {
+//              Log.d(TAG, "Leader == 0.0.0.0");
                 // TODO: hotspot patch
                 isLeader = true;
             }
@@ -189,19 +189,22 @@ public class SoftwareSyncController implements Closeable {
                             context.runOnUiThread(
                                     () -> statusView.setText(softwareSync.getName() + ": Waiting for Sync")));
 
-
             clientRpcs.put(
                     METHOD_START_RECORDING,
                     payload -> {
                         Log.v(TAG, "Starting video");
-                        context.startVideo(false);
+                        context.runOnUiThread(
+                                () -> context.startVideo(false)
+                        );
                     });
 
             clientRpcs.put(
                     METHOD_STOP_RECORDING,
                     payload -> {
                         Log.v(TAG, "Stopping video");
-                        context.stopVideo();
+                        context.runOnUiThread(
+                                context::stopVideo
+                        );
                     });
 
             clientRpcs.put(

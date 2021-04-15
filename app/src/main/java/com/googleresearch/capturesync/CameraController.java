@@ -152,17 +152,16 @@ public class CameraController {
 //                      + " %,.3f, sequence id = %d",
 //                  timestampMs, frameDurationMs, phaseMs, sequenceId));
               // TODO: log this to csv
-//              try {
-//                synchronized(this) {
-//
-////                  if (context.getLogger() != null && !context.getLogger().isClosed()) {
-////                    context.getLogger().logLine(String.format("%d,%d,%d",
-////                            synchronizedTimestampNs, context.isVideoRecording() ? 1 : 0, context.getCurSequence()));
-////                  }
-//                }
-//              } catch (IOException e) {
-//                e.printStackTrace();
-//              }
+              try {
+                synchronized(this) {
+                  if (context.getLogger() != null && !context.getLogger().isClosed() &&  context.getLastVideoSeqId() != null && context.getLastVideoSeqId() == sequenceId) {
+                    context.getLogger().logLine(String.format("%d",
+                            synchronizedTimestampNs));
+                  }
+                }
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
               if (shouldSaveFrame(synchronizedTimestampNs)) {
                 Log.d(TAG, "Sync frame found! Committing and processing");
                 Frame frame = new Frame(result, output);

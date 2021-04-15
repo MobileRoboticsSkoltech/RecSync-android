@@ -26,6 +26,7 @@ import android.media.ImageReader;
 import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -392,10 +393,14 @@ public class ImageMetadataSynchronizer {
           public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session, int sequenceId, long frameNumber) {
             super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
             Log.v(TAG, "YAAAY I've completed succesfully");
-            if (sequenceId == context.getLastVideoSeqId() && context.getLogger() != null) {
-               context.getLogger().close();
-               context.setLogger(null);
-               context.setVideoRecording(false);
+            if (context.getLastVideoSeqId() != null && sequenceId == context.getLastVideoSeqId() && context.getLogger() != null) {
+              context.getMediaRecorder().stop();
+//        mLogger.close();
+//        mLogger = null;
+               context.getMediaRecorder().reset();
+              context.setVideoRecording(false);
+              context.getLogger().close();
+              context.setLogger(null);
             }
           }
         };
