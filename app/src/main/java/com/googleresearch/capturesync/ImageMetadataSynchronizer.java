@@ -397,7 +397,7 @@ public class ImageMetadataSynchronizer {
               context.getMediaRecorder().stop();
 //        mLogger.close();
 //        mLogger = null;
-               context.getMediaRecorder().reset();
+              context.getMediaRecorder().reset();
               context.setVideoRecording(false);
               context.getLogger().close();
               context.setLogger(null);

@@ -127,11 +127,12 @@ public class CameraController {
             output -> {
               CaptureResult result = output.result;
               Object userTag = CaptureRequestTag.getUserTag(result);
-              if (userTag != null && userTag.equals(PhaseAlignController.INJECT_FRAME)) {
-                Log.v(TAG, "Skipping phase align injection frame.");
-                output.close();
-                return;
-              }
+              // MROB: We don't skip them cause every frame counts!!
+//              if (userTag != null && userTag.equals(PhaseAlignController.INJECT_FRAME)) {
+//                Log.v(TAG, "Skipping phase align injection frame.");
+//                output.close();
+//                return;
+//              }
 
               int sequenceId = result.getSequenceId();
               long synchronizedTimestampNs =
@@ -162,14 +163,14 @@ public class CameraController {
               } catch (IOException e) {
                 e.printStackTrace();
               }
-              if (shouldSaveFrame(synchronizedTimestampNs)) {
-                Log.d(TAG, "Sync frame found! Committing and processing");
-                Frame frame = new Frame(result, output);
-                resultProcessor.submitProcessRequest(frame, goalOutputDirName);
-                resetGoal();
-              } else {
-                output.close();
-              }
+//              if (shouldSaveFrame(synchronizedTimestampNs)) {
+//                Log.d(TAG, "Sync frame found! Committing and processing");
+//                Frame frame = new Frame(result, output);
+//                resultProcessor.submitProcessRequest(frame, goalOutputDirName);
+//                resetGoal();
+//              } else {
+//                output.close();
+//              }
             },
             syncHandler);
   }
