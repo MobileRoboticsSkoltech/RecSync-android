@@ -920,9 +920,10 @@ public class MainActivity extends Activity {
         String currentPath = getOutputMediaFilePath();
         recorder.setOutputFile(currentPath);
 
-        CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P);
+        CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_1080P);
         recorder.setVideoSize(profile.videoFrameWidth, profile.videoFrameHeight);
         recorder.setVideoEncodingBitRate(profile.videoBitRate);
+
         recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 //    int rotation = getWindowManager().getDefaultDisplay().getRotation();
 /*    switch (mSensorOrientation) {
