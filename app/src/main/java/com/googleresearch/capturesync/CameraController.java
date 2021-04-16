@@ -163,14 +163,14 @@ public class CameraController {
               } catch (IOException e) {
                 e.printStackTrace();
               }
-//              if (shouldSaveFrame(synchronizedTimestampNs)) {
-//                Log.d(TAG, "Sync frame found! Committing and processing");
-//                Frame frame = new Frame(result, output);
-//                resultProcessor.submitProcessRequest(frame, goalOutputDirName);
-//                resetGoal();
-//              } else {
-//                output.close();
-//              }
+              if (shouldSaveFrame(synchronizedTimestampNs)) {
+                Log.d(TAG, "Sync frame found! Committing and processing");
+                Frame frame = new Frame(result, output);
+                resultProcessor.submitProcessRequest(frame, goalOutputDirName);
+                resetGoal();
+              } else {
+                output.close();
+              }
             },
             syncHandler);
   }
