@@ -36,7 +36,7 @@ public class PhaseAlignController {
   // Maximum number of phase alignment iteration steps in the alignment process.
   // TODO(samansari): Make this a parameter that you pass in to this class. Then make the class that
   // constructs this pass the constant in.
-  private static final int MAX_ITERATIONS = 5;
+  private static final int MAX_ITERATIONS = 50;
   // Delay after an alignment step to wait for phase to settle before starting the next iteration.
   private static final int PHASE_SETTLE_DELAY_MS = 400;
   private final MainActivity context;
