@@ -1,5 +1,5 @@
 {
-  "periodNs": 33320000,
+  "periodNs": 33329000,
   "goalPhaseNs": 15000000,
   "alignThresholdNs": 100000,
   "overheadNs": 200000,

@@ -115,7 +115,7 @@ public class MainActivity extends Activity {
     private boolean permissionsGranted = false;
 
     // Phase config file to use for phase alignment, configs are located in the raw folder.
-    private final int phaseConfigFile = R.raw.pixel3_phaseconfig;
+    private final int phaseConfigFile = R.raw.default_phaseconfig;
 
     public MediaRecorder getMediaRecorder() {
         return mediaRecorder;
