@@ -4,7 +4,12 @@
     - Triggering at some time in the future is no longer needed(?)
     - New types of RPCs: start and stop video
     - ... profit!
-    - 
+
+## Our contribution:
+
+    - Integrated sync video
+    - Scripts for extraction, alignment and processing of video frames [in progress]
+
 # Wireless Software Synchronization of Multiple Distributed Cameras
 
 Reference code for the paper
