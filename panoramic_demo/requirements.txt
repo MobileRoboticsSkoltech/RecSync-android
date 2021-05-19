@@ -1,0 +1,11 @@
+rosbag
+numpy
+opencv-python==4.2.0.32
+cv_bridge
+pyyaml
+pycryptodomex
+gnupg
+rospkg
+sensor_msgs
+pypcd
+pandas
