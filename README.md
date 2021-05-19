@@ -10,6 +10,10 @@
     - Integrated sync video
     - Scripts for extraction, alignment and processing of video frames [in progress]
 
+## Video panorama stitching demo
+
+- in progress on another branch
+
 # Wireless Software Synchronization of Multiple Distributed Cameras
 
 Reference code for the paper
