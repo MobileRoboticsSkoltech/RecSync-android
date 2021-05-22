@@ -11,6 +11,7 @@ TODO: panorama gif
 
     - Integrated sync video
     - Scripts for extraction, alignment and processing of video frames
+    - Experiment with flash blinking to evaluate video frames synchronization accuracy
     - Panoramic video demo with automated Hujin stitching
 
 ## Video panorama stitching demo
