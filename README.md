@@ -1,5 +1,7 @@
 # RecSync Android
 
+TODO: panorama gif
+
 ## Main ideas:
     - Triggering at some time in the future is no longer needed(?)
     - New types of RPCs: start and stop video
@@ -8,7 +10,8 @@
 ## Our contribution:
 
     - Integrated sync video
-    - Scripts for extraction, alignment and processing of video frames [in progress]
+    - Scripts for extraction, alignment and processing of video frames
+    - Panoramic video demo with automated Hujin stitching
 
 ## Video panorama stitching demo
 
