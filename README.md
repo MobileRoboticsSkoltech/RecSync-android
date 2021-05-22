@@ -1,4 +1,4 @@
-# MROB Video modification [in progress]
+# RecSync Android
 
 ## Main ideas:
     - Triggering at some time in the future is no longer needed(?)
