@@ -36,6 +36,6 @@ else
   mkdir  "$DIR"
   ffmpeg -i "$SMARTPHONE_VIDEO_PATH" -vsync 0 "$DIR/frame-%d.png"
   python extract.py --output "$DIR" \
-  --type sm_frames --frame_dir "$DIR" --vid "$SMARTPHONE_VIDEO_PATH"
+   --frame_dir "$DIR" --vid "$SMARTPHONE_VIDEO_PATH"
 fi
 

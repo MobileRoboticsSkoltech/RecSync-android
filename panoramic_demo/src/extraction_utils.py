@@ -26,7 +26,7 @@ def get_timestamp_filename(timestamp, extension):
     return "%d.%s" % (timestamp.secs * 1e9 + timestamp.nsecs, extension)
 
 
-def extract_frame_data(self, target_dir, video_path):
+def extract_frame_data(target_dir, video_path):
     # load frame timestamps csv, rename frames according to it
     video_root, video_filename = os.path.split(video_path)
     video_name, _ = os.path.splitext(video_filename)
