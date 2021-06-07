@@ -1,14 +1,13 @@
-# MROB Video modification [in progress]
+# RecSync-android
 
 ## Main ideas:
-    - Triggering at some time in the future is no longer needed(?)
-    - New types of RPCs: start and stop video
-    - ... profit!
+- Triggering at some time in the future is no longer needed
+- New types of RPCs are used: start and stop video
 
 ## Our contribution:
 
-    - Integrated synchronized video recording
-    - Scripts for extraction, alignment and processing of video frames [in progress]
+- Integrated **synchronized video recording**
+- Scripts for extraction, alignment and processing of video frames [in progress]
 
 ## Panoramic demo
 
