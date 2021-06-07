@@ -1,4 +1,4 @@
-# RecSync-android
+# RecSync Android
 
 ## Main ideas:
 - Triggering at some time in the future is no longer needed
@@ -7,7 +7,10 @@
 ## Our contribution:
 
 - Integrated **synchronized video recording**
-- Scripts for extraction, alignment and processing of video frames [in progress]
+- Integrated sync video
+- Scripts for extraction, alignment and processing of video frames
+- Experiment with flash blinking to evaluate video frames synchronization accuracy
+- Panoramic video demo with automated Hujin stitching
 
 ## Panoramic demo
 
