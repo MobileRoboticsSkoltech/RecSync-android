@@ -31,6 +31,7 @@ import android.view.Surface;
 import com.googleresearch.capturesync.ImageMetadataSynchronizer.CaptureRequestTag;
 import com.googleresearch.capturesync.softwaresync.TimeDomainConverter;
 import com.googleresearch.capturesync.softwaresync.TimeUtils;
+import com.googleresearch.capturesync.softwaresync.phasealign.PeriodCalculator;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -71,6 +72,8 @@ public class CameraController {
 
   private String goalOutputDirName;
 
+  private PeriodCalculator periodCalculator;
+
   private CaptureRequestFactory requestFactory;
 
   /**
@@ -88,8 +91,8 @@ public class CameraController {
           Size yuvImageResolution,
           PhaseAlignController phaseAlignController,
           MainActivity context,
-          TimeDomainConverter timeDomainConverter) {
-
+          TimeDomainConverter timeDomainConverter
+          ) {
     imageThread = new HandlerThread("ImageThread");
     imageThread.start();
     imageHandler = new Handler(imageThread.getLooper());
@@ -135,9 +138,11 @@ public class CameraController {
 //              }
 
               int sequenceId = result.getSequenceId();
+              long unSyncTimestampNs = result.get(CaptureResult.SENSOR_TIMESTAMP);
+              context.onTimestampNs(unSyncTimestampNs);
               long synchronizedTimestampNs =
                       timeDomainConverter.leaderTimeForLocalTimeNs(
-                              result.get(CaptureResult.SENSOR_TIMESTAMP));
+                              unSyncTimestampNs);
 
               double timestampMs = TimeUtils.nanosToMillis((double) synchronizedTimestampNs);
               double frameDurationMs =

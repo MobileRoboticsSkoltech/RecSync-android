@@ -60,6 +60,7 @@ import android.widget.Toast;
 import com.googleresearch.capturesync.softwaresync.CSVLogger;
 import com.googleresearch.capturesync.softwaresync.SoftwareSyncLeader;
 import com.googleresearch.capturesync.softwaresync.TimeUtils;
+import com.googleresearch.capturesync.softwaresync.phasealign.PeriodCalculator;
 import com.googleresearch.capturesync.softwaresync.phasealign.PhaseConfig;
 
 import java.io.File;
@@ -77,23 +78,29 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/** Main activity for the libsoftwaresync demo app using the camera 2 API. */
+/**
+ * Main activity for the libsoftwaresync demo app using the camera 2 API.
+ */
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     //  private static final int EXP_LEN = 20_000;
     private static final int STATIC_LEN = 15_000;
     private String lastTimeStamp;
+    private PeriodCalculator periodCalculator;
 
     public Integer getLastVideoSeqId() {
         return lastVideoSeqId;
     }
 
     private Integer lastVideoSeqId;
+
     public int getCurSequence() {
         return curSequence;
     }
@@ -144,6 +151,7 @@ public class MainActivity extends Activity {
 
     // UI controls.
     private Button captureStillButton;
+    private Button getPeriodButton;
     private Button phaseAlignButton;
     private SeekBar exposureSeekBar;
     private SeekBar sensitivitySeekBar;
@@ -200,7 +208,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.v(TAG, "onCreate");
-
+        periodCalculator = new PeriodCalculator();
         checkPermissions();
         if (permissionsGranted) {
             onCreateWithPermission();
@@ -263,7 +271,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Resize the SurfaceView to be centered on screen. */
+    /**
+     * Resize the SurfaceView to be centered on screen.
+     */
     private void updateViewfinderLayoutParams() {
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) surfaceView.getLayoutParams();
 
@@ -363,12 +373,17 @@ public class MainActivity extends Activity {
         }
     }
 
+    public void onTimestampNs(long timestampNs) {
+        periodCalculator.onFrameTimestamp(timestampNs);
+    }
+
     /* Set up UI controls and listeners based on if device is currently a leader of client. */
     private void setLeaderClientControls(boolean isLeader) {
         if (isLeader) {
             // Leader, all controls visible and set.
             captureStillButton.setVisibility(View.VISIBLE);
             phaseAlignButton.setVisibility(View.VISIBLE);
+            getPeriodButton.setVisibility(View.VISIBLE);
             exposureSeekBar.setVisibility(View.VISIBLE);
             sensitivitySeekBar.setVisibility(View.VISIBLE);
 
@@ -415,6 +430,26 @@ public class MainActivity extends Activity {
                     String.valueOf(futureTimestamp));*/
                     });
 
+            getPeriodButton.setOnClickListener(
+                    view -> {
+                        Log.d(TAG, "Calculating frames period.");
+
+                        FutureTask<Integer> periodTask = new FutureTask<Integer>(
+                                () -> {
+                                    try {
+                                        long periodNs = periodCalculator.getPeriodNs();
+                                        Log.d(TAG, "Calculated period: " + periodNs);
+                                        phaseAlignController.setPeriodNs(periodNs);
+                                    } catch (InterruptedException e) {
+                                        Log.d(TAG, "Failed calculating period");
+                                        e.printStackTrace();
+                                    }
+                                    return 0;
+                                }
+                        );
+                        periodTask.run();
+                    }
+            );
 
             phaseAlignButton.setOnClickListener(
                     view -> {
@@ -486,6 +521,7 @@ public class MainActivity extends Activity {
             // Client. All controls invisible.
             captureStillButton.setVisibility(View.INVISIBLE);
             phaseAlignButton.setVisibility(View.INVISIBLE);
+            getPeriodButton.setVisibility(View.INVISIBLE);
             exposureSeekBar.setVisibility(View.INVISIBLE);
             sensitivitySeekBar.setVisibility(View.INVISIBLE);
 
@@ -662,7 +698,9 @@ public class MainActivity extends Activity {
                 });
     }
 
-    /** Compares two {@code Size}s based on their areas. */
+    /**
+     * Compares two {@code Size}s based on their areas.
+     */
     static class CompareSizesByArea implements Comparator<Size> {
 
         @Override
@@ -707,6 +745,8 @@ public class MainActivity extends Activity {
         // Controls.
         captureStillButton = findViewById(R.id.capture_still_button);
         phaseAlignButton = findViewById(R.id.phase_align_button);
+        getPeriodButton = findViewById(R.id.get_period_button);
+
         exposureSeekBar = findViewById(R.id.exposure_seekbar);
         sensitivitySeekBar = findViewById(R.id.sensitivity_seekbar);
         sensorExposureTextView.setText("Exposure: " + prettyExposureValue(currentSensorExposureTimeNs));
@@ -781,7 +821,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Create {@link #cameraController}, and subscribe to status change events. */
+    /**
+     * Create {@link #cameraController}, and subscribe to status change events.
+     */
     private void initCameraController() {
         cameraController =
                 new CameraController(
@@ -1034,7 +1076,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Wait for permissions to continue onCreate. */
+    /**
+     * Wait for permissions to continue onCreate.
+     */
     @Override
     public void onRequestPermissionsResult(
             int requestCode, String[] permissions, int[] grantResults) {
