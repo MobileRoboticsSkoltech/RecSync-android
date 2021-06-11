@@ -58,6 +58,12 @@
                 android:text="SoftwareSync"
                 android:textSize="8sp" />
 
+
+            <Button
+                android:id="@+id/get_period_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Calculate period"/>
             <Button
                 android:id="@+id/phase_align_button"
                 android:layout_width="match_parent"

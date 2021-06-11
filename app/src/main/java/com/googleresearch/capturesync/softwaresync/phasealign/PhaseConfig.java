@@ -24,7 +24,7 @@ import org.json.JSONObject;
  * capture mode, such as for a repeating request with exposures less than 33 ms.
  */
 public final class PhaseConfig {
-  private final long periodNs;
+  private long periodNs;
   private final long goalPhaseNs;
   private final long alignThresholdNs;
   private final long overheadNs;
@@ -37,6 +37,10 @@ public final class PhaseConfig {
     this.alignThresholdNs = alignThresholdNs;
     this.overheadNs = overheadNs;
     this.minExposureNs = minExposureNs;
+  }
+
+  public void setPeriodNs(long periodNs) {
+    this.periodNs = periodNs;
   }
 
   /** Parse from a given JSON. */
