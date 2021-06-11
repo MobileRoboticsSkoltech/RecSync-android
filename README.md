@@ -8,7 +8,6 @@ Andrioid application which allows you to record synchronized smarpthone videos w
 ## Our contribution:
 
 - Integrated **synchronized video recording**
-- Integrated sync video
 - Scripts for extraction, alignment and processing of video frames
 - Experiment with flash blinking to evaluate video frames synchronization accuracy
 - Panoramic video demo with automated Hujin stitching
