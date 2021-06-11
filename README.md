@@ -2,9 +2,8 @@
 
 Andrioid application which allows you to record synchronized smarpthone videos with sub-millisecond accuracy.
 
-## Main ideas:
-- Triggering at some time in the future is no longer needed
-- New types of RPCs are used: start and stop video
+## Usage:
+- TODO
 
 ## Our contribution:
 
