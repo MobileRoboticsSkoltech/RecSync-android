@@ -1,5 +1,5 @@
-/**
- * Copyright 2019 The Google Research Authors.
+/*
+ * Copyright 2021 Mobile Robotics Lab. at Skoltech.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,8 @@ public class CaptureRequestFactory {
   }
 
   /**
-   * Experimental MROB. Creates builder for video request
+   * An alternative capture request for video,
+   * includes everything from preview + mediaRecorder
    */
   public CaptureRequest.Builder makeVideo(
           Surface recorderSurface,
@@ -103,29 +104,6 @@ public class CaptureRequestFactory {
       builder.addTarget(recorderSurface);
     }
     return builder;
-/*
-    CaptureRequest.Builder builder = device.createCaptureRequest(TEMPLATE_PREVIEW);
-    // Manually set exposure and sensitivity using UI sliders on the leader.
-    builder.set(CONTROL_AE_MODE, CONTROL_AE_MODE_OFF);
-    builder.set(SENSOR_EXPOSURE_TIME, sensorExposureTimeNs);
-    builder.set(SENSOR_SENSITIVITY, sensorSensitivity);
-
-    // Auto white balance used, these could be locked and sent from the leader instead.
-    builder.set(CONTROL_AWB_MODE, CONTROL_AWB_MODE_AUTO);
-
-    // Auto focus is used since different devices may have different manual focus values.
-    builder.set(CONTROL_AF_MODE, CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-
-    if (viewfinderSurface != null) {
-      builder.addTarget(viewfinderSurface);
-    }
-    List<Integer> targetIndices = new ArrayList<>();
-    for (int i = 0; i < imageSurfaces.size(); i++) {
-      builder.addTarget(imageSurfaces.get(i));
-      targetIndices.add(i);
-    }
-    builder.setTag(new CaptureRequestTag(targetIndices, null));
-    return builder;*/
   }
 
 

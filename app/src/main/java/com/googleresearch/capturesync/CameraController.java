@@ -1,5 +1,5 @@
-/**
- * Copyright 2019 The Google Research Authors.
+/*
+ * Copyright 2021 Mobile Robotics Lab. at Skoltech.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ public class CameraController {
             output -> {
               CaptureResult result = output.result;
               Object userTag = CaptureRequestTag.getUserTag(result);
-              // MROB: We don't skip them cause every frame counts!!
+              // We don't skip them because every frame counts when restoring video sequence
 //              if (userTag != null && userTag.equals(PhaseAlignController.INJECT_FRAME)) {
 //                Log.v(TAG, "Skipping phase align injection frame.");
 //                output.close();
@@ -150,7 +150,6 @@ public class CameraController {
 
               long phaseNs = phaseAlignController.updateCaptureTimestamp(synchronizedTimestampNs);
               double phaseMs = TimeUtils.nanosToMillis((double) phaseNs);
-//
 //          Log.v(
 //              TAG,
 //              String.format(

@@ -4,14 +4,14 @@
     <!-- Synchronized simplecamera2 app. [CHAR_LIMIT=80] -->
     <string name="app_name">CaptureSync</string>
     <!-- Request synchronized still. [CHAR_LIMIT=80] -->
-    <string name="action_capture_still">Capture Still</string>
+    <string name="action_capture_still">Record video</string>
     <!-- Request phase alignment. [CHAR_LIMIT=80] -->
     <string name="action_phase_align">Align Phases</string>
     <!-- Request send 2A values. [CHAR_LIMIT=80] -->
     <string name="action_send_2a">Align 2A</string>
 
     <!-- Status text. [CHAR_LIMIT=80] -->
-    <string name="status_text_uninitialized">SoftwareSync Demo App</string>
+    <string name="status_text_uninitialized">RecSync Android</string>
     <!-- Status text for current phase. [CHAR_LIMIT=80] -->
     <string name="status_text_phase">Phase</string>
     <!-- Slider text for exposure. [CHAR_LIMIT=80] -->
