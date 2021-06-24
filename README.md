@@ -14,6 +14,8 @@ Andrioid application which allows you to record synchronized smarpthone videos w
 
 ## Panoramic demo
 
+### [Link to youtube demo video](https://youtu.be/W6iANtCuQ-o)
+
 - We provide scripts to **stitch 2 syncronized smatphone videos** with Hujin panorama CLI tools
 - Usage:
     - Run ```./make_demo.sh {VIDEO_LEFT} {VIDEO_RIGHT}```
