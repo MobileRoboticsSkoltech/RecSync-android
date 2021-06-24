@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Synchronized simplecamera2 app. [CHAR_LIMIT=80] -->
-    <string name="app_name">CaptureSync</string>
+    <string name="app_name">RecSync</string>
     <!-- Request synchronized still. [CHAR_LIMIT=80] -->
     <string name="action_capture_still">Record video</string>
     <!-- Request phase alignment. [CHAR_LIMIT=80] -->
