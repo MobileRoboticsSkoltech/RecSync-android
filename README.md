@@ -23,8 +23,15 @@ Andrioid application which allows you to record synchronized smarpthone videos w
 
 #### Extraction and matching of the frames
 
+```
+Requirements:
+
+- Python
+- ffmpeg
+```
+
 1. Navigate to ```utils``` directory in the repository.
-2. Run ```./match.sh <VIDEO_1> <VIDEO_2>```
+2. Run ```./match.sh <VIDEO_1> <VIDEO_2>```.
 3. Frames will be extracted to directories ```output/1``` and ```output/2``` with timestamps in filenames, output directory will also contain ```match.csv``` file in the following format:
     ```
     timestamp_1(ns) timestamp_2(ns)
