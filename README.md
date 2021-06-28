@@ -21,6 +21,15 @@ Andrioid application which allows you to record synchronized smarpthone videos w
 3.  Adjust exposure and ISO to your needs.
 4.  Press the ```record video``` button to start synchronized video recording.
 
+#### Extraction and matching of the frames
+
+1. Navigate to ```utils``` directory in the repository.
+2. Run ```./match.sh <VIDEO_1> <VIDEO_2>```
+3. Frames will be extracted to directories ```output/1``` and ```output/2``` with timestamps in filenames, output directory will also contain ```match.csv``` file in the following format:
+    ```
+    timestamp_1(ns) timestamp_2(ns)
+    ```
+
 ### Our contribution:
 
 - Integrated **synchronized video recording**
