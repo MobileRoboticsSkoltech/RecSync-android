@@ -3,7 +3,23 @@
 Andrioid application which allows you to record synchronized smarpthone videos with sub-millisecond accuracy.
 
 ### Usage:
-- TODO
+
+
+#### Leader smartphone setup
+
+1.  Start a Wi-Fi hotspot.
+2.  The app should display connected clients and buttons for recording control
+
+#### Client smartphones setup
+
+1.  Enable WiFi and connect to the Wi-Fi hotspot.
+
+#### Capturing images
+
+1.  [Optional step] Press the ```calculate period``` button. The app will analyze frame stream and use the calculated frame period in further synchronization steps.
+2.  Press the ```phase align``` button.
+3.  Adjust exposure and ISO to your needs.
+4.  Press the ```record video``` button to start synchronized video recording.
 
 ### Our contribution:
 
