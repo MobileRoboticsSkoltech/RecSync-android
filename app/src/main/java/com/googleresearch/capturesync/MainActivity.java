@@ -439,6 +439,15 @@ public class MainActivity extends Activity {
                                     try {
                                         long periodNs = periodCalculator.getPeriodNs();
                                         Log.d(TAG, "Calculated period: " + periodNs);
+                                        if (latestToast != null) {
+                                            latestToast.cancel();
+                                        }
+                                        latestToast =
+                                                Toast.makeText(
+                                                        this,
+                                                        "Calculated period: " + periodNs,
+                                                        Toast.LENGTH_LONG);
+                                        latestToast.show();
                                         phaseAlignController.setPeriodNs(periodNs);
                                     } catch (InterruptedException e) {
                                         Log.d(TAG, "Failed calculating period");
