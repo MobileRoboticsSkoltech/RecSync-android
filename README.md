@@ -1,6 +1,4 @@
-## RecSync Android: Sub-millisecond Video Synchronization of Multiple Android Smartphones
-
-Andrioid application which allows you to record synchronized smarpthone videos with sub-millisecond accuracy.
+![Logo](https://imgur.com/YtJA0E2.png)
 
 ### Usage:
 
