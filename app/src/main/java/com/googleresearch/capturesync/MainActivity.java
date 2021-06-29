@@ -79,7 +79,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 
@@ -94,6 +93,21 @@ public class MainActivity extends Activity {
     private static final int STATIC_LEN = 15_000;
     private String lastTimeStamp;
     private PeriodCalculator periodCalculator;
+
+    public String getLastVideoPath() {
+        return lastVideoPath;
+    }
+
+    public void deleteUnusedVideo() {
+        String videoPath = getLastVideoPath();
+        File videoFile = new File(videoPath);
+        boolean result = videoFile.delete();
+        if (!result) {
+            Log.d(TAG, "Video file could not be deleted");
+        }
+    }
+
+    private String lastVideoPath;
 
     public Integer getLastVideoSeqId() {
         return lastVideoSeqId;
@@ -951,6 +965,7 @@ public class MainActivity extends Activity {
         MediaRecorder recorder = setUpMediaRecorder(surface, false);
         recorder.prepare();
         recorder.release();
+        deleteUnusedVideo();
     }
 
     private MediaRecorder setUpMediaRecorder(Surface surface) throws IOException {
@@ -968,8 +983,8 @@ public class MainActivity extends Activity {
          * set output file in media recorder
          */
 
-        String currentPath = getOutputMediaFilePath();
-        recorder.setOutputFile(currentPath);
+        lastVideoPath = getOutputMediaFilePath();
+        recorder.setOutputFile(lastVideoPath);
 
         CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_1080P);
         recorder.setVideoSize(profile.videoFrameWidth, profile.videoFrameHeight);

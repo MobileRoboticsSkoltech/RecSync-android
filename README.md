@@ -1,6 +1,4 @@
-## RecSync Android: Sub-millisecond Video Synchronization of Multiple Android Smartphones
-
-Andrioid application which allows you to record synchronized smarpthone videos with sub-millisecond accuracy.
+![Logo](https://imgur.com/YtJA0E2.png)
 
 ### Usage:
 
@@ -20,6 +18,22 @@ Andrioid application which allows you to record synchronized smarpthone videos w
 2.  Press the ```phase align``` button.
 3.  Adjust exposure and ISO to your needs.
 4.  Press the ```record video``` button to start synchronized video recording.
+
+#### Extraction and matching of the frames
+
+```
+Requirements:
+
+- Python
+- ffmpeg
+```
+
+1. Navigate to ```utils``` directory in the repository.
+2. Run ```./match.sh <VIDEO_1> <VIDEO_2>```.
+3. Frames will be extracted to directories ```output/1``` and ```output/2``` with timestamps in filenames, output directory will also contain ```match.csv``` file in the following format:
+    ```
+    timestamp_1(ns) timestamp_2(ns)
+    ```
 
 ### Our contribution:
 
