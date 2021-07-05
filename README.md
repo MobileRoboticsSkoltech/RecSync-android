@@ -15,8 +15,8 @@
 #### Capturing images
 
 1.  [Optional step] Press the ```calculate period``` button. The app will analyze frame stream and use the calculated frame period in further synchronization steps.
-2.  Press the ```phase align``` button.
-3.  Adjust exposure and ISO to your needs.
+2.  Adjust exposure and ISO to your needs.
+3.  Press the ```phase align``` button.
 4.  Press the ```record video``` button to start synchronized video recording.
 
 #### Extraction and matching of the frames
