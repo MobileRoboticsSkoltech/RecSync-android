@@ -131,7 +131,7 @@ public class MainActivity extends Activity {
 
     private int curSequence;
 
-    private static final String SUBDIR_NAME = "TMP_MROB";
+    private static final String SUBDIR_NAME = "RecSync";
 
     private boolean permissionsGranted = false;
 
