@@ -12,12 +12,13 @@
 
 1.  Enable WiFi and connect to the Wi-Fi hotspot.
 
-#### Capturing images
+#### Recording video
 
 1.  [Optional step] Press the ```calculate period``` button. The app will analyze frame stream and use the calculated frame period in further synchronization steps.
 2.  Adjust exposure and ISO to your needs.
 3.  Press the ```phase align``` button.
 4.  Press the ```record video``` button to start synchronized video recording.
+5.  Get videos from RecSync folder in smartphone root directory.
 
 #### Extraction and matching of the frames
 
