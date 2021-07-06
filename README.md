@@ -41,7 +41,7 @@ Requirements:
 - Integrated **synchronized video recording**
 - Scripts for extraction, alignment and processing of video frames
 - Experiment with flash blinking to evaluate video frames synchronization accuracy
-- Panoramic video demo with automated Hujin stitching
+- Panoramic video demo with automated Hugin stitching
 
 ### Panoramic video stitching demo
 
