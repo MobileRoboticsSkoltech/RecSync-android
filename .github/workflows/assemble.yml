@@ -32,8 +32,20 @@ jobs:
       - name: Assemble release
         run: ./gradlew assembleRelease
 
+      - name: Run lint for release
+        run: ./gradlew lintRelease
+
       - name: Assemble debug
         run: ./gradlew assembleDebug
+
+      - name: Run lint for debug
+        run: ./gradlew lintDebug
+
+      - name: Upload lint results
+        uses: actions/upload-artifact@v2
+        with:
+          name: lint-results
+          path: app/build/reports/lint-results-*.*
 
       - name: Cleanup Gradle Cache
         # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
