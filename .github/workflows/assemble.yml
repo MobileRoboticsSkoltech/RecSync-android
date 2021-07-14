@@ -1,11 +1,6 @@
 name: Assemble
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 
 jobs:
   assemble:
