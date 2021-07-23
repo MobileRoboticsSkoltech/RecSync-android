@@ -1,5 +1,16 @@
 ![Logo](https://imgur.com/YtJA0E2.png)
 
+If you use this application, please cite [Sub-millisecond Video Synchronization of Multiple Android Smartphones](https://arxiv.org/abs/2107.00987):
+```
+@misc{akhmetyanov2021submillisecond,
+      title={Sub-millisecond Video Synchronization of Multiple Android Smartphones}, 
+      author={Azat Akhmetyanov and Anastasiia Kornilova and Marsel Faizullin and David Pozo and Gonzalo Ferrer},
+      year={2021},
+      eprint={2107.00987},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
 ### Usage:
 
 
