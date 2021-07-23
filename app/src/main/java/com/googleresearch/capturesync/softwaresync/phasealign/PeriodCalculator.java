@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class PeriodCalculator {
-    private final static long CALC_DURATION_MS = 5000;
+    private final static long CALC_DURATION_MS = 10000;
     private volatile boolean shouldRegister;
     private ArrayList<Long> registeredTimestamps;
 
@@ -23,7 +23,6 @@ public class PeriodCalculator {
         Thread.sleep(CALC_DURATION_MS);
         // Stop recording timestamps and calculate period
         shouldRegister = false;
-        // TODO: switch to clusters!
         return calcPeriodNsClusters(getDiff(registeredTimestamps));
     }
 

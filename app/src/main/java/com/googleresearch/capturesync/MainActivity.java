@@ -393,6 +393,36 @@ public class MainActivity extends Activity {
 
     /* Set up UI controls and listeners based on if device is currently a leader of client. */
     private void setLeaderClientControls(boolean isLeader) {
+        getPeriodButton.setOnClickListener(
+                view -> {
+                    Log.d(TAG, "Calculating frames period.");
+
+                    FutureTask<Integer> periodTask = new FutureTask<Integer>(
+                            () -> {
+                                try {
+                                    long periodNs = periodCalculator.getPeriodNs();
+                                    Log.d(TAG, "Calculated period: " + periodNs);
+                                    if (latestToast != null) {
+                                        latestToast.cancel();
+                                    }
+                                    latestToast =
+                                            Toast.makeText(
+                                                    this,
+                                                    "Calculated period: " + periodNs,
+                                                    Toast.LENGTH_LONG);
+                                    latestToast.show();
+                                    phaseAlignController.setPeriodNs(periodNs);
+                                } catch (InterruptedException e) {
+                                    Log.d(TAG, "Failed calculating period");
+                                    e.printStackTrace();
+                                }
+                                return 0;
+                            }
+                    );
+                    periodTask.run();
+                }
+        );
+
         if (isLeader) {
             // Leader, all controls visible and set.
             captureStillButton.setVisibility(View.VISIBLE);
@@ -443,36 +473,6 @@ public class MainActivity extends Activity {
                     SoftwareSyncController.METHOD_SET_TRIGGER_TIME,
                     String.valueOf(futureTimestamp));*/
                     });
-
-            getPeriodButton.setOnClickListener(
-                    view -> {
-                        Log.d(TAG, "Calculating frames period.");
-
-                        FutureTask<Integer> periodTask = new FutureTask<Integer>(
-                                () -> {
-                                    try {
-                                        long periodNs = periodCalculator.getPeriodNs();
-                                        Log.d(TAG, "Calculated period: " + periodNs);
-                                        if (latestToast != null) {
-                                            latestToast.cancel();
-                                        }
-                                        latestToast =
-                                                Toast.makeText(
-                                                        this,
-                                                        "Calculated period: " + periodNs,
-                                                        Toast.LENGTH_LONG);
-                                        latestToast.show();
-                                        phaseAlignController.setPeriodNs(periodNs);
-                                    } catch (InterruptedException e) {
-                                        Log.d(TAG, "Failed calculating period");
-                                        e.printStackTrace();
-                                    }
-                                    return 0;
-                                }
-                        );
-                        periodTask.run();
-                    }
-            );
 
             phaseAlignButton.setOnClickListener(
                     view -> {
@@ -544,7 +544,7 @@ public class MainActivity extends Activity {
             // Client. All controls invisible.
             captureStillButton.setVisibility(View.INVISIBLE);
             phaseAlignButton.setVisibility(View.INVISIBLE);
-            getPeriodButton.setVisibility(View.INVISIBLE);
+            getPeriodButton.setVisibility(View.VISIBLE);
             exposureSeekBar.setVisibility(View.INVISIBLE);
             sensitivitySeekBar.setVisibility(View.INVISIBLE);
 
