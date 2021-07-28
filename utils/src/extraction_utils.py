@@ -30,11 +30,8 @@ def extract_frame_data(target_dir, video_path):
     # load frame timestamps csv, rename frames according to it
     video_root, video_filename = os.path.split(video_path)
     video_name, _ = os.path.splitext(video_filename)
-    video_date = re.sub(r"VID_((\d|_)*)", r"\1", video_name)
 
-    video_parent_dir = os.path.abspath(os.path.join(video_root, os.pardir))
-
-    with open(os.path.join(video_parent_dir, video_date + ".csv"))\
+    with open(os.path.join(video_root, video_name + ".csv"))\
             as frame_timestamps_file:
         filename_timestamps = list(map(
             lambda x: (x.strip('\n'), int(x)), frame_timestamps_file.readlines()

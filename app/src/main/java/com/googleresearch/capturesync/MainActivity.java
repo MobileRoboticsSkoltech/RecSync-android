@@ -85,6 +85,8 @@ import java.util.stream.Collectors;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import sensorremote.RemoteRpcServer;
+
 /**
  * Main activity for the libsoftwaresync demo app using the camera 2 API.
  */
@@ -92,7 +94,14 @@ public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     private static final int STATIC_LEN = 15_000;
     private String lastTimeStamp;
+
+    public String getLastTsPath() {
+        return lastTsPath;
+    }
+
+    private String lastTsPath;
     private PeriodCalculator periodCalculator;
+    private RemoteRpcServer mRpcServer;
 
     public String getLastVideoPath() {
         return lastVideoPath;
@@ -324,6 +333,11 @@ public class MainActivity extends Activity {
         surfaceView.setVisibility(View.VISIBLE);
 
         startCameraThread();
+        try {
+            mRpcServer = new RemoteRpcServer(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -369,6 +383,10 @@ public class MainActivity extends Activity {
                             startSoftwareSync();
                             initCameraController();
                             configureCaptureSession(); // calls startPreview();
+
+                            mRpcServer.start();
+                            Log.d(TAG, "App rpc listener thread started");
+
                         }
 
                         @Override
@@ -553,6 +571,10 @@ public class MainActivity extends Activity {
             exposureSeekBar.setOnSeekBarChangeListener(null);
             sensitivitySeekBar.setOnSeekBarChangeListener(null);
         }
+    }
+
+    public SoftwareSyncController getSoftwareSyncController() {
+        return softwareSyncController;
     }
 
     private void startSoftwareSync() {
@@ -1009,6 +1031,10 @@ public class MainActivity extends Activity {
         return isVideoRecording;
     }
 
+    public String getLastTimeStamp() {
+        return lastTimeStamp;
+    }
+
     public void startVideo(boolean wantAutoExp) {
         Log.d(TAG, "Starting video.");
         Toast.makeText(this, "Started recording video", Toast.LENGTH_LONG).show();
@@ -1020,6 +1046,7 @@ public class MainActivity extends Activity {
             // Creates frame timestamps logger
             try {
                 mLogger = new CSVLogger(SUBDIR_NAME, filename, this);
+                lastTsPath = mLogger.getLastTsPath();
             } catch (IOException e) {
                 e.printStackTrace();
             }

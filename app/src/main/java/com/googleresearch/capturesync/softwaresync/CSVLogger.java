@@ -27,6 +27,12 @@ public class CSVLogger {
         return isClosed;
     }
 
+    public String getLastTsPath() {
+        return lastTsPath;
+    }
+
+    private final String lastTsPath;
+
     private volatile boolean isClosed;
 
     public CSVLogger(String dirName, String filename, MainActivity context) throws IOException {
@@ -35,7 +41,7 @@ public class CSVLogger {
         Path dir = Files.createDirectories(Paths.get(sdcard.getAbsolutePath(), dirName));
         File file = new File(dir.toFile(), filename);
         writer = new BufferedWriter(new FileWriter(file, true));
-
+        lastTsPath = file.getAbsolutePath();
         // Important: adding comment with metadata before isClosed is changed
 //        writer.write("# " + Build.MODEL);
 //        writer.write("\n");

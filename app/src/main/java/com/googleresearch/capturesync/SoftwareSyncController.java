@@ -234,6 +234,10 @@ public class SoftwareSyncController implements Closeable {
         }
     }
 
+    public SoftwareSyncBase getSoftwareSync() {
+        return softwareSync;
+    }
+
     /**
      * Show the number of connected clients on the leader status UI.
      *
