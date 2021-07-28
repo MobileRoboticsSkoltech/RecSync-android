@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 public class PeriodCalculator {
@@ -20,9 +23,18 @@ public class PeriodCalculator {
         // Start recording timestamps
         registeredTimestamps = new ArrayList<>();
         shouldRegister = true;
-        Thread.sleep(CALC_DURATION_MS);
-        // Stop recording timestamps and calculate period
-        shouldRegister = false;
+        final CountDownLatch latch = new CountDownLatch(1);
+        TimerTask task = new TimerTask() {
+            public void run() {
+                // Stop recording timestamps and calculate period
+                shouldRegister = false;
+                latch.countDown();
+            }
+        };
+        Timer timer = new Timer("Timer");
+
+        timer.schedule(task, CALC_DURATION_MS);
+        latch.await();
         return calcPeriodNsClusters(getDiff(registeredTimestamps));
     }
 
@@ -61,14 +73,10 @@ public class PeriodCalculator {
     }
 
     private long median(ArrayList<Long> numArray) {
-        numArray.sort(Comparator.naturalOrder());
-        double median;
-        if (numArray.size() % 2 == 0)
-            median = ((double)numArray.get(numArray.size()/2)
-                    + (double)numArray.get(numArray.size()/2 - 1))/2;
-        else
-            median = (double) numArray.get(numArray.size()/2);
-        return (long)median;
+        Collections.sort(numArray);
+        int middle = numArray.size() / 2;
+        middle = middle > 0 && middle % 2 == 0 ? middle - 1 : middle;
+        return numArray.get(middle);
     }
 
     public void onFrameTimestamp(long timestampNs) {
@@ -77,6 +85,4 @@ public class PeriodCalculator {
             registeredTimestamps.add(timestampNs);
         }
     }
-
-
 }
