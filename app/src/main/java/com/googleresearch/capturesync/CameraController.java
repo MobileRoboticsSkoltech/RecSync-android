@@ -43,6 +43,16 @@ import java.util.TimeZone;
 public class CameraController {
   private static final String TAG = "CameraController";
 
+  public long getFirstTimestampNs() {
+    return firstTimestampNs;
+  }
+
+  public void setFirstTimestampNs(long firstTimestampNs) {
+    this.firstTimestampNs = firstTimestampNs;
+  }
+
+  private long firstTimestampNs = 0;
+
   // Thread on which to receive ImageReader callbacks.
   private HandlerThread imageThread;
   private Handler imageHandler;
@@ -139,16 +149,18 @@ public class CameraController {
 
               int sequenceId = result.getSequenceId();
               long unSyncTimestampNs = result.get(CaptureResult.SENSOR_TIMESTAMP);
-              context.onTimestampNs(unSyncTimestampNs);
+
+
               long synchronizedTimestampNs =
                       timeDomainConverter.leaderTimeForLocalTimeNs(
                               unSyncTimestampNs);
+              context.onTimestampNs(synchronizedTimestampNs);
 
               double timestampMs = TimeUtils.nanosToMillis((double) synchronizedTimestampNs);
               double frameDurationMs =
                       TimeUtils.nanosToMillis((double) result.get(CaptureResult.SENSOR_FRAME_DURATION));
 
-              long phaseNs = phaseAlignController.updateCaptureTimestamp(synchronizedTimestampNs);
+              long phaseNs = phaseAlignController.updateCaptureTimestamp(synchronizedTimestampNs - firstTimestampNs);
               double phaseMs = TimeUtils.nanosToMillis((double) phaseNs);
 //          Log.v(
 //              TAG,

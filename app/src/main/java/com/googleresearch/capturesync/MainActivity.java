@@ -179,6 +179,10 @@ public class MainActivity extends Activity {
     private long currentSensorExposureTimeNs = seekBarValueToExposureNs(10);
     private int currentSensorSensitivity = seekBarValueToSensitivity(3);
 
+    public CameraController getCameraController() {
+        return cameraController;
+    }
+
     // High level camera controls.
     private CameraController cameraController;
     private CameraCaptureSession captureSession;
@@ -389,6 +393,14 @@ public class MainActivity extends Activity {
 
     public void onTimestampNs(long timestampNs) {
         periodCalculator.onFrameTimestamp(timestampNs);
+
+        if (isLeader() && cameraController.getFirstTimestampNs() == 0) {
+            cameraController.setFirstTimestampNs(timestampNs);
+            ((SoftwareSyncLeader) softwareSyncController.softwareSync)
+                    .broadcastRpc(
+                            SoftwareSyncController.METHOD_SET_FIRST_TIME,
+                            "" + timestampNs);
+        }
     }
 
     /* Set up UI controls and listeners based on if device is currently a leader of client. */
@@ -553,6 +565,10 @@ public class MainActivity extends Activity {
             exposureSeekBar.setOnSeekBarChangeListener(null);
             sensitivitySeekBar.setOnSeekBarChangeListener(null);
         }
+    }
+
+    public boolean isLeader() {
+        return softwareSyncController.isLeader();
     }
 
     private void startSoftwareSync() {

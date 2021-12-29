@@ -62,6 +62,7 @@ public class SoftwareSyncController implements Closeable {
     public static final int METHOD_SET_2A = 200_002;
     public static final int METHOD_START_RECORDING = 200_003;
     public static final int METHOD_STOP_RECORDING = 200_004;
+    public static final int METHOD_SET_FIRST_TIME = 200_005;
 
     private long upcomingTriggerTimeNs;
 
@@ -197,6 +198,13 @@ public class SoftwareSyncController implements Closeable {
                                 () -> context.startVideo(false)
                         );
                     });
+
+            clientRpcs.put(
+                    METHOD_SET_FIRST_TIME,
+                    payload -> {
+                        context.getCameraController().setFirstTimestampNs(Long.parseLong(payload));
+                    }
+            );
 
             clientRpcs.put(
                     METHOD_STOP_RECORDING,
