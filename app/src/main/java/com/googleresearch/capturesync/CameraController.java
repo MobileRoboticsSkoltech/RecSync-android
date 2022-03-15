@@ -150,13 +150,6 @@ public class CameraController {
 
               long phaseNs = phaseAlignController.updateCaptureTimestamp(synchronizedTimestampNs);
               double phaseMs = TimeUtils.nanosToMillis((double) phaseNs);
-//          Log.v(
-//              TAG,
-//              String.format(
-//                  "onCaptureCompleted: timestampMs = %,.3f, frameDurationMs = %,.6f, phase ="
-//                      + " %,.3f, sequence id = %d",
-//                  timestampMs, frameDurationMs, phaseMs, sequenceId));
-              // TODO: log this to csv
               try {
                 synchronized(this) {
                   if (context.getLogger() != null && !context.getLogger().isClosed() &&  context.getLastVideoSeqId() != null && context.getLastVideoSeqId() == sequenceId) {
@@ -167,6 +160,8 @@ public class CameraController {
               } catch (IOException e) {
                 e.printStackTrace();
               }
+              // TODO: rewrite this to save at certain phase
+              // TODO: how do we match pairs in runtime?
               if (shouldSaveFrame(synchronizedTimestampNs)) {
                 Log.d(TAG, "Sync frame found! Committing and processing");
                 Frame frame = new Frame(result, output);
@@ -181,8 +176,9 @@ public class CameraController {
 
   /* Check if given timestamp is or passed goal timestamp in the synchronized leader time domain. */
   private boolean shouldSaveFrame(long synchronizedTimestampNs) {
-    return goalSynchronizedTimestampNs != 0
-            && synchronizedTimestampNs >= goalSynchronizedTimestampNs;
+//    return goalSynchronizedTimestampNs != 0
+//            && synchronizedTimestampNs >= goalSynchronizedTimestampNs;
+    return (synchronizedTimestampNs - 15000000) % (33327307 * 5) < 3000000;
   }
 
   private void resetGoal() {
