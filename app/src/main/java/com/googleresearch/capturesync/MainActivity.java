@@ -59,6 +59,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.googleresearch.capturesync.softwaresync.CSVLogger;
+import com.googleresearch.capturesync.softwaresync.SoftwareSyncClient;
 import com.googleresearch.capturesync.softwaresync.SoftwareSyncLeader;
 import com.googleresearch.capturesync.softwaresync.TimeUtils;
 import com.googleresearch.capturesync.softwaresync.phasealign.PeriodCalculator;
@@ -85,12 +86,20 @@ import java.util.stream.Collectors;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import imagestreaming.StreamClient;
+import imagestreaming.StreamServer;
+
 /**
  * Main activity for the libsoftwaresync demo app using the camera 2 API.
  */
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     private static final int STATIC_LEN = 15_000;
+
+    public String getLastTimeStamp() {
+        return lastTimeStamp;
+    }
+
     private String lastTimeStamp;
     private PeriodCalculator periodCalculator;
 
@@ -131,7 +140,7 @@ public class MainActivity extends Activity {
 
     private int curSequence;
 
-    private static final String SUBDIR_NAME = "RecSync";
+    public static final String SUBDIR_NAME = "RecSync";
 
     private boolean permissionsGranted = false;
 
@@ -442,6 +451,7 @@ public class MainActivity extends Activity {
 
                         } else {
                             startVideo(false);
+
                             ((SoftwareSyncLeader) softwareSyncController.softwareSync)
                                     .broadcastRpc(
                                             SoftwareSyncController.METHOD_START_RECORDING,
@@ -572,6 +582,17 @@ public class MainActivity extends Activity {
                     "Couldn't start SoftwareSync due to " + e + ", requesting user pick a wifi network.");
             finish(); // Close current app, expect user to restart.
             startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
+        }
+    }
+
+    public boolean isLeader() {
+        return softwareSyncController.isLeader();
+    }
+
+    public void onStreamFrame(File jpegFile, long timestampNs) {
+        if (!isLeader()) {
+            SoftwareSyncClient softwareSyncClient = (SoftwareSyncClient) softwareSyncController.softwareSync;
+            softwareSyncClient.getStreamClient().onVideoFrame(jpegFile, timestampNs);
         }
     }
 
@@ -1014,6 +1035,7 @@ public class MainActivity extends Activity {
         Toast.makeText(this, "Started recording video", Toast.LENGTH_LONG).show();
 
         isVideoRecording = true;
+        cameraController.prepareFrameSaving(this);
         try {
             mediaRecorder = setUpMediaRecorder(surface);
             String filename = lastTimeStamp + ".csv";
@@ -1052,7 +1074,7 @@ public class MainActivity extends Activity {
 
     public void stopVideo() {
         // Switch to preview again
-
+        cameraController.stopFrameSaving(this);
         Toast.makeText(this, "Stopped recording video", Toast.LENGTH_LONG).show();
         startPreview();
     }

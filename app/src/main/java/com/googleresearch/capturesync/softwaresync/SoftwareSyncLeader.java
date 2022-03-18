@@ -17,6 +17,9 @@
 package com.googleresearch.capturesync.softwaresync;
 
 import android.util.Log;
+
+import com.googleresearch.capturesync.MainActivity;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -31,6 +34,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import imagestreaming.StreamClient;
+import imagestreaming.StreamServer;
 
 /**
  * Leader which listens for registrations from SoftwareSyncClients, allowing it to broadcast times
@@ -60,8 +66,8 @@ public class SoftwareSyncLeader extends SoftwareSyncBase {
   private final SimpleNetworkTimeProtocol sntp;
 
   public SoftwareSyncLeader(
-      String name, long initialTime, InetAddress address, Map<Integer, RpcCallback> rpcCallbacks) {
-    this(name, new SystemTicker(), initialTime, address, rpcCallbacks);
+      String name, long initialTime, InetAddress address, Map<Integer, RpcCallback> rpcCallbacks, MainActivity context) {
+    this(name, new SystemTicker(), initialTime, address, rpcCallbacks, context);
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
@@ -70,9 +76,10 @@ public class SoftwareSyncLeader extends SoftwareSyncBase {
       Ticker localClock,
       long initialTime,
       InetAddress address,
-      Map<Integer, RpcCallback> rpcCallbacks) {
+      Map<Integer, RpcCallback> rpcCallbacks,
+      MainActivity context) {
     // Note: Leader address is required to be the same as local address.
-    super(name, localClock, address, address);
+    super(name, localClock, address, address, context);
 
     // Set up the offsetNs so that the leader synchronized time (via getLeaderTimeNs()) on all
     // devices
@@ -106,6 +113,9 @@ public class SoftwareSyncLeader extends SoftwareSyncBase {
     // Start periodically checking for stale clients and removing as needed.
     staleClientChecker.scheduleAtFixedRate(
         this::removeStaleClients, 0, SyncConstants.STALE_TIME_NS, TimeUnit.NANOSECONDS);
+//
+    setStreamServer(new StreamServer(context));
+    getStreamServer().start();
   }
 
   public Map<InetAddress, ClientInfo> getClients() {
@@ -226,6 +236,7 @@ public class SoftwareSyncLeader extends SoftwareSyncBase {
   public void close() throws IOException {
     sntp.close();
     staleClientChecker.shutdown();
+    getStreamServer().stopExecuting();
     try {
       // Wait up to 0.5 seconds for this to close.
       staleClientChecker.awaitTermination(500, TimeUnit.MILLISECONDS);

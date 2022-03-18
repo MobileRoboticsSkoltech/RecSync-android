@@ -174,7 +174,7 @@ public class SoftwareSyncController implements Closeable {
             leaderRpcs.put(SyncConstants.METHOD_MSG_REMOVED_CLIENT, payload -> updateClientsUI());
             leaderRpcs.put(SyncConstants.METHOD_MSG_SYNCING, payload -> updateClientsUI());
             leaderRpcs.put(SyncConstants.METHOD_MSG_OFFSET_UPDATED, payload -> updateClientsUI());
-            softwareSync = new SoftwareSyncLeader(name, initTimeNs, localAddress, leaderRpcs);
+            softwareSync = new SoftwareSyncLeader(name, initTimeNs, localAddress, leaderRpcs, context);
         } else {
             // Client.
             Map<Integer, RpcCallback> clientRpcs = new HashMap<>(sharedRpcs);
@@ -216,7 +216,7 @@ public class SoftwareSyncController implements Closeable {
                                                     String.format(
                                                             "Client %s\n-Synced to Leader %s",
                                                             softwareSync.getName(), softwareSync.getLeaderAddress()))));
-            softwareSync = new SoftwareSyncClient(name, localAddress, leaderAddress, clientRpcs);
+            softwareSync = new SoftwareSyncClient(name, localAddress, leaderAddress, clientRpcs, context);
         }
 
         if (isLeader) {

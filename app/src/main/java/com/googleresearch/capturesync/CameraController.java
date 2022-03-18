@@ -23,17 +23,24 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureResult;
 import android.media.ImageReader;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
+import android.widget.Toast;
+
 import com.googleresearch.capturesync.ImageMetadataSynchronizer.CaptureRequestTag;
 import com.googleresearch.capturesync.softwaresync.TimeDomainConverter;
 import com.googleresearch.capturesync.softwaresync.TimeUtils;
 import com.googleresearch.capturesync.softwaresync.phasealign.PeriodCalculator;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +65,7 @@ public class CameraController {
   private final ImageMetadataSynchronizer imageMetadataSynchronizer;
 
   private final ResultProcessor resultProcessor;
+  private Path outputDir = null;
 
   public CaptureCallback getSynchronizerCaptureCallback() {
     return imageMetadataSynchronizer.getCaptureCallback();
@@ -162,10 +170,12 @@ public class CameraController {
               }
               // TODO: rewrite this to save at certain phase
               // TODO: how do we match pairs in runtime?
-              if (shouldSaveFrame(synchronizedTimestampNs)) {
+              if (shouldSaveFrame(synchronizedTimestampNs) && outputDir != null) {
                 Log.d(TAG, "Sync frame found! Committing and processing");
                 Frame frame = new Frame(result, output);
-                resultProcessor.submitProcessRequest(frame, goalOutputDirName);
+                if (context.isVideoRecording()) {
+                  resultProcessor.submitProcessRequest(frame, outputDir.toString());
+                }
                 resetGoal();
               } else {
                 output.close();
@@ -174,11 +184,28 @@ public class CameraController {
             syncHandler);
   }
 
+  public void prepareFrameSaving(MainActivity context) {
+    // should be called when new video is started
+    File sdcard = Environment.getExternalStorageDirectory();
+    try {
+      outputDir = Files.createDirectories(Paths.get(sdcard.getAbsolutePath(), MainActivity.SUBDIR_NAME, context.getLastTimeStamp()));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    Toast.makeText(context, "Prepared for saving frames", Toast.LENGTH_SHORT).show();
+  }
+
+  public void stopFrameSaving(MainActivity context) {
+    outputDir = null;
+  }
+
   /* Check if given timestamp is or passed goal timestamp in the synchronized leader time domain. */
   private boolean shouldSaveFrame(long synchronizedTimestampNs) {
 //    return goalSynchronizedTimestampNs != 0
 //            && synchronizedTimestampNs >= goalSynchronizedTimestampNs;
-    return (synchronizedTimestampNs - 15000000) % (33327307 * 5) < 3000000;
+    // The frame should be saved if: 1) the video is recording 2) phases are aligned 3) the timestamp matches saving period from config
+//    return false;
+    return (synchronizedTimestampNs - 15000000) % (33327307 * 15) < 5000000;
   }
 
   private void resetGoal() {

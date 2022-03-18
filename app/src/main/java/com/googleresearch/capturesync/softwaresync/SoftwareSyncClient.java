@@ -17,12 +17,17 @@
 package com.googleresearch.capturesync.softwaresync;
 
 import android.util.Log;
+
+import com.googleresearch.capturesync.MainActivity;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import imagestreaming.StreamClient;
 
 /**
  * Client which registers and synchronizes clocks with SoftwareSyncLeader. This allows it to receive
@@ -68,18 +73,20 @@ public class SoftwareSyncClient extends SoftwareSyncBase {
       String name,
       InetAddress address,
       InetAddress leaderAddress,
-      Map<Integer, RpcCallback> rpcCallbacks) {
-    this(name, new SystemTicker(), address, leaderAddress, rpcCallbacks);
+      Map<Integer, RpcCallback> rpcCallbacks,
+      MainActivity context) {
+    this(name, new SystemTicker(), address, leaderAddress, rpcCallbacks, context);
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
   private SoftwareSyncClient(
-      String name,
-      Ticker localClock,
-      InetAddress address,
-      InetAddress leaderAddress,
-      Map<Integer, RpcCallback> rpcCallbacks) {
-    super(name, localClock, address, leaderAddress);
+          String name,
+          Ticker localClock,
+          InetAddress address,
+          InetAddress leaderAddress,
+          Map<Integer, RpcCallback> rpcCallbacks,
+          MainActivity context) {
+    super(name, localClock, address, leaderAddress, context);
 
     // Add client-specific RPC callbacks.
     rpcMap.put(
@@ -111,6 +118,12 @@ public class SoftwareSyncClient extends SoftwareSyncBase {
     // Start periodically sending out a heartbeat to the leader.
     heartbeatScheduler.scheduleAtFixedRate(
         this::sendHeartbeat, 0, SyncConstants.HEARTBEAT_PERIOD_NS, TimeUnit.NANOSECONDS);
+
+    try {
+      setStreamClient(new StreamClient(leaderAddress, context));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   /* Resets the client synchronization state. */

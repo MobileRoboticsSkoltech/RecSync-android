@@ -18,6 +18,9 @@ package com.googleresearch.capturesync.softwaresync;
 
 import android.os.HandlerThread;
 import android.util.Log;
+
+import com.googleresearch.capturesync.MainActivity;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.BindException;
@@ -32,6 +35,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import imagestreaming.StreamClient;
+import imagestreaming.StreamServer;
 
 /**
  * SoftwareSyncBase is the abstract base class to SoftwareSyncLeader and SoftwareSyncClient, holding
@@ -64,7 +70,27 @@ public abstract class SoftwareSyncBase implements Closeable, TimeDomainConverter
   /** Handle onRPC events on a separate thread. */
   private final ExecutorService rpcExecutor = Executors.newSingleThreadExecutor();
 
-  SoftwareSyncBase(String name, Ticker localClock, InetAddress address, InetAddress leaderAddress) {
+  public StreamClient getStreamClient() {
+    return streamClient;
+  }
+
+  public void setStreamClient(StreamClient streamClient) {
+    this.streamClient = streamClient;
+  }
+
+  public StreamServer getStreamServer() {
+    return streamServer;
+  }
+
+  public void setStreamServer(StreamServer streamServer) {
+    this.streamServer = streamServer;
+  }
+
+  private StreamClient streamClient;
+  private StreamServer streamServer;
+
+
+  SoftwareSyncBase(String name, Ticker localClock, InetAddress address, InetAddress leaderAddress, MainActivity context) {
     this.rpcPort = SyncConstants.RPC_PORT;
     this.sntpPort = SyncConstants.SNTP_PORT;
     this.localClock = localClock;
