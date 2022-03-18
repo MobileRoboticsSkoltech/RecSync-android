@@ -10,10 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 
 /**
@@ -31,6 +28,7 @@ public class FileTransferUtils {
 
     /**
      * Sends specified file with provided TCP socket
+     *
      * @param file
      * @param sendSocket
      * @throws IOException
@@ -62,6 +60,7 @@ public class FileTransferUtils {
     /**
      * Handles receiving file with specified TCP socket,
      * saves it
+     *
      * @throws IOException
      */
     public File receiveFile(String fileName, Socket receiveSocket) throws IOException {

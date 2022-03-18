@@ -41,6 +41,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import imagestreaming.FileTransferUtils;
+
 // Note : Needs Network permissions.
 
 /** Controller managing setup and tear down the SoftwareSync object. */
@@ -129,6 +131,8 @@ public class SoftwareSyncController implements Closeable {
             }
         }
 
+        FileTransferUtils fileUtils = new FileTransferUtils(context);
+
         // Set up shared rpcs.
         Map<Integer, RpcCallback> sharedRpcs = new HashMap<>();
         sharedRpcs.put(
@@ -174,7 +178,7 @@ public class SoftwareSyncController implements Closeable {
             leaderRpcs.put(SyncConstants.METHOD_MSG_REMOVED_CLIENT, payload -> updateClientsUI());
             leaderRpcs.put(SyncConstants.METHOD_MSG_SYNCING, payload -> updateClientsUI());
             leaderRpcs.put(SyncConstants.METHOD_MSG_OFFSET_UPDATED, payload -> updateClientsUI());
-            softwareSync = new SoftwareSyncLeader(name, initTimeNs, localAddress, leaderRpcs, context);
+            softwareSync = new SoftwareSyncLeader(name, initTimeNs, localAddress, leaderRpcs, fileUtils);
         } else {
             // Client.
             Map<Integer, RpcCallback> clientRpcs = new HashMap<>(sharedRpcs);
@@ -216,7 +220,7 @@ public class SoftwareSyncController implements Closeable {
                                                     String.format(
                                                             "Client %s\n-Synced to Leader %s",
                                                             softwareSync.getName(), softwareSync.getLeaderAddress()))));
-            softwareSync = new SoftwareSyncClient(name, localAddress, leaderAddress, clientRpcs, context);
+            softwareSync = new SoftwareSyncClient(name, localAddress, leaderAddress, clientRpcs, fileUtils);
         }
 
         if (isLeader) {

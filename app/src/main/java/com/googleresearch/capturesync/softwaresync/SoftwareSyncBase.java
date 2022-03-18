@@ -19,8 +19,6 @@ package com.googleresearch.capturesync.softwaresync;
 import android.os.HandlerThread;
 import android.util.Log;
 
-import com.googleresearch.capturesync.MainActivity;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.BindException;
@@ -36,6 +34,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import imagestreaming.FileTransferUtils;
+import imagestreaming.BasicStreamClient;
+import imagestreaming.BasicStreamServer;
 import imagestreaming.StreamClient;
 import imagestreaming.StreamServer;
 
@@ -90,7 +91,7 @@ public abstract class SoftwareSyncBase implements Closeable, TimeDomainConverter
   private StreamServer streamServer;
 
 
-  SoftwareSyncBase(String name, Ticker localClock, InetAddress address, InetAddress leaderAddress, MainActivity context) {
+  SoftwareSyncBase(String name, Ticker localClock, InetAddress address, InetAddress leaderAddress, FileTransferUtils fileUtils) {
     this.rpcPort = SyncConstants.RPC_PORT;
     this.sntpPort = SyncConstants.SNTP_PORT;
     this.localClock = localClock;

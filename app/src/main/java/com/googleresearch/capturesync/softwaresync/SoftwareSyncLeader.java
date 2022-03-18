@@ -18,8 +18,6 @@ package com.googleresearch.capturesync.softwaresync;
 
 import android.util.Log;
 
-import com.googleresearch.capturesync.MainActivity;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -35,8 +33,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import imagestreaming.StreamClient;
-import imagestreaming.StreamServer;
+import imagestreaming.FileTransferUtils;
+import imagestreaming.BasicStreamServer;
 
 /**
  * Leader which listens for registrations from SoftwareSyncClients, allowing it to broadcast times
@@ -66,20 +64,20 @@ public class SoftwareSyncLeader extends SoftwareSyncBase {
   private final SimpleNetworkTimeProtocol sntp;
 
   public SoftwareSyncLeader(
-      String name, long initialTime, InetAddress address, Map<Integer, RpcCallback> rpcCallbacks, MainActivity context) {
-    this(name, new SystemTicker(), initialTime, address, rpcCallbacks, context);
+      String name, long initialTime, InetAddress address, Map<Integer, RpcCallback> rpcCallbacks, FileTransferUtils fileUtils) {
+    this(name, new SystemTicker(), initialTime, address, rpcCallbacks, fileUtils);
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
   private SoftwareSyncLeader(
-      String name,
-      Ticker localClock,
-      long initialTime,
-      InetAddress address,
-      Map<Integer, RpcCallback> rpcCallbacks,
-      MainActivity context) {
+          String name,
+          Ticker localClock,
+          long initialTime,
+          InetAddress address,
+          Map<Integer, RpcCallback> rpcCallbacks,
+          FileTransferUtils fileUtils) {
     // Note: Leader address is required to be the same as local address.
-    super(name, localClock, address, address, context);
+    super(name, localClock, address, address, fileUtils);
 
     // Set up the offsetNs so that the leader synchronized time (via getLeaderTimeNs()) on all
     // devices
@@ -114,7 +112,7 @@ public class SoftwareSyncLeader extends SoftwareSyncBase {
     staleClientChecker.scheduleAtFixedRate(
         this::removeStaleClients, 0, SyncConstants.STALE_TIME_NS, TimeUnit.NANOSECONDS);
 //
-    setStreamServer(new StreamServer(context));
+    setStreamServer(new BasicStreamServer(fileUtils));
     getStreamServer().start();
   }
 

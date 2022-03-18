@@ -18,8 +18,6 @@ package com.googleresearch.capturesync.softwaresync;
 
 import android.util.Log;
 
-import com.googleresearch.capturesync.MainActivity;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Map;
@@ -27,7 +25,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import imagestreaming.StreamClient;
+import imagestreaming.FileTransferUtils;
+import imagestreaming.BasicStreamClient;
 
 /**
  * Client which registers and synchronizes clocks with SoftwareSyncLeader. This allows it to receive
@@ -74,8 +73,8 @@ public class SoftwareSyncClient extends SoftwareSyncBase {
       InetAddress address,
       InetAddress leaderAddress,
       Map<Integer, RpcCallback> rpcCallbacks,
-      MainActivity context) {
-    this(name, new SystemTicker(), address, leaderAddress, rpcCallbacks, context);
+      FileTransferUtils fileUtils) {
+    this(name, new SystemTicker(), address, leaderAddress, rpcCallbacks, fileUtils);
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
@@ -85,8 +84,8 @@ public class SoftwareSyncClient extends SoftwareSyncBase {
           InetAddress address,
           InetAddress leaderAddress,
           Map<Integer, RpcCallback> rpcCallbacks,
-          MainActivity context) {
-    super(name, localClock, address, leaderAddress, context);
+          FileTransferUtils fileUtils) {
+    super(name, localClock, address, leaderAddress, fileUtils);
 
     // Add client-specific RPC callbacks.
     rpcMap.put(
@@ -120,7 +119,7 @@ public class SoftwareSyncClient extends SoftwareSyncBase {
         this::sendHeartbeat, 0, SyncConstants.HEARTBEAT_PERIOD_NS, TimeUnit.NANOSECONDS);
 
     try {
-      setStreamClient(new StreamClient(leaderAddress, context));
+      setStreamClient(new BasicStreamClient(leaderAddress, fileUtils));
     } catch (IOException e) {
       e.printStackTrace();
     }

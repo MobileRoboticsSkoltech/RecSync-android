@@ -86,9 +86,6 @@ import java.util.stream.Collectors;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import imagestreaming.StreamClient;
-import imagestreaming.StreamServer;
-
 /**
  * Main activity for the libsoftwaresync demo app using the camera 2 API.
  */
