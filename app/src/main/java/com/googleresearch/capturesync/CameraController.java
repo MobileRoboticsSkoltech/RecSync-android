@@ -35,6 +35,7 @@ import com.googleresearch.capturesync.ImageMetadataSynchronizer.CaptureRequestTa
 import com.googleresearch.capturesync.softwaresync.TimeDomainConverter;
 import com.googleresearch.capturesync.softwaresync.TimeUtils;
 import com.googleresearch.capturesync.softwaresync.phasealign.PeriodCalculator;
+import com.googleresearch.capturesync.softwaresync.phasealign.PhaseConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,6 +83,8 @@ public class CameraController {
 
   private PeriodCalculator periodCalculator;
 
+  private PhaseConfig phaseConfig;
+
   private CaptureRequestFactory requestFactory;
 
   /**
@@ -99,12 +102,14 @@ public class CameraController {
           Size yuvImageResolution,
           PhaseAlignController phaseAlignController,
           MainActivity context,
-          TimeDomainConverter timeDomainConverter
+          TimeDomainConverter timeDomainConverter,
+          PhaseConfig phaseConfig
           ) {
+    this.phaseConfig = phaseConfig;
+
     imageThread = new HandlerThread("ImageThread");
     imageThread.start();
     imageHandler = new Handler(imageThread.getLooper());
-
     syncThread = new HandlerThread("SyncThread");
     syncThread.start();
     syncHandler = new Handler(syncThread.getLooper());
@@ -203,9 +208,10 @@ public class CameraController {
   private boolean shouldSaveFrame(long synchronizedTimestampNs) {
 //    return goalSynchronizedTimestampNs != 0
 //            && synchronizedTimestampNs >= goalSynchronizedTimestampNs;
-    // The frame should be saved if: 1) the video is recording 2) phases are aligned 3) the timestamp matches saving period from config
-//    return false;
-    return (synchronizedTimestampNs - 15000000) % (33327307 * 15) < 5000000;
+    // The frame should be saved if: 1) phases are aligned 2) the timestamp matches saving period from config
+    return (synchronizedTimestampNs - phaseConfig.goalPhaseNs())
+            % (phaseConfig.periodNs() * phaseConfig.streamingPeriodFrames())
+            < phaseConfig.matchThresholdNs();
   }
 
   private void resetGoal() {

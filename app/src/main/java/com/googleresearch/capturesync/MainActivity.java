@@ -265,13 +265,17 @@ public class MainActivity extends Activity {
 
     private void setupPhaseAlignController() {
         // Set up phase aligner.
+        phaseAlignController = new PhaseAlignController(loadPhaseConfigChecked(), this);
+    }
+
+    private PhaseConfig loadPhaseConfigChecked() {
         PhaseConfig phaseConfig;
         try {
             phaseConfig = loadPhaseConfigFile();
         } catch (JSONException e) {
             throw new IllegalArgumentException("Error reading JSON file: ", e);
         }
-        phaseAlignController = new PhaseAlignController(phaseConfig, this);
+        return phaseConfig;
     }
 
     /**
@@ -873,7 +877,8 @@ public class MainActivity extends Activity {
                         Constants.SAVE_YUV ? yuvImageResolution : null,
                         phaseAlignController,
                         this,
-                        softwareSyncController.softwareSync);
+                        softwareSyncController.softwareSync,
+                        loadPhaseConfigChecked());
     }
 
     private void configureCaptureSession() {
