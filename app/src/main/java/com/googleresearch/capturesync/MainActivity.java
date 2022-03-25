@@ -24,6 +24,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
@@ -36,6 +38,7 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.CamcorderProfile;
+import android.media.Image;
 import android.media.MediaCodec;
 import android.media.MediaRecorder;
 import android.net.wifi.WifiManager;
@@ -53,6 +56,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -66,6 +70,8 @@ import com.googleresearch.capturesync.softwaresync.phasealign.PeriodCalculator;
 import com.googleresearch.capturesync.softwaresync.phasealign.PhaseConfig;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -73,6 +79,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -89,9 +96,11 @@ import org.json.JSONObject;
 /**
  * Main activity for the libsoftwaresync demo app using the camera 2 API.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements FrameInfo {
     private static final String TAG = "MainActivity";
     private static final int STATIC_LEN = 15_000;
+    private static final int LATEST_FRAMES_CAP = 30;
+
 
     public String getLastTimeStamp() {
         return lastTimeStamp;
@@ -99,6 +108,21 @@ public class MainActivity extends Activity {
 
     private String lastTimeStamp;
     private PeriodCalculator periodCalculator;
+
+    public ArrayDeque<Long> getLatestFrames() {
+        return latestFrames;
+    }
+
+    public void displayStreamFrame(File streamFrame) {
+        Bitmap streamBitmap = BitmapFactory.decodeFile(streamFrame.getAbsolutePath());
+        runOnUiThread(
+                () -> {
+                    streamImageView.setImageBitmap(streamBitmap);
+                }
+        );
+    }
+
+    private ArrayDeque<Long> latestFrames;
 
     public String getLastVideoPath() {
         return lastVideoPath;
@@ -197,6 +221,8 @@ public class MainActivity extends Activity {
 
     private AutoFitSurfaceView surfaceView;
 
+    private ImageView streamImageView;
+
     private final SurfaceHolder.Callback surfaceCallback =
             new SurfaceHolder.Callback() {
 
@@ -243,6 +269,7 @@ public class MainActivity extends Activity {
 
         createUi();
         setupPhaseAlignController();
+        latestFrames = new ArrayDeque<Long>();
 
         // Query for camera characteristics and cache them.
         try {
@@ -594,6 +621,12 @@ public class MainActivity extends Activity {
         if (!isLeader()) {
             SoftwareSyncClient softwareSyncClient = (SoftwareSyncClient) softwareSyncController.softwareSync;
             softwareSyncClient.getStreamClient().onVideoFrame(jpegFile, timestampNs);
+        } else {
+            Long timestamp = Long.parseLong(jpegFile.getName().split("_", -1)[0]);
+            latestFrames.add(timestamp);
+            if (latestFrames.size() > LATEST_FRAMES_CAP) {
+                latestFrames.removeFirst();
+            }
         }
     }
 
@@ -779,6 +812,7 @@ public class MainActivity extends Activity {
 
         // Create the SurfaceView.
         surfaceView = findViewById(R.id.viewfinder_surface_view);
+        streamImageView = findViewById(R.id.stream_preview_iv);
 
         // TextViews.
         statusTextView = findViewById(R.id.status_text);

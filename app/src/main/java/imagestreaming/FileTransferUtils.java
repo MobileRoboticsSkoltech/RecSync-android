@@ -5,6 +5,8 @@ import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Provides methods for file transfer with TCP sockets
@@ -37,24 +41,32 @@ public class FileTransferUtils {
     public void sendFile(
             File file, Socket sendSocket
     ) throws IOException {
-        byte[] data;
-        Log.d(TAG, "Connected to Server...");
-        data = new byte[BUFFER_SIZE];
+//        byte[] data;
+//        Log.d(TAG, "Connected to Server...");
+//        data = new byte[BUFFER_SIZE];
+//
+//        // Sending File Data
+//        Log.d(TAG, "Sending file data...");
+//        FileInputStream fileStream = new FileInputStream(file);
+//        BufferedInputStream fileBuffer = new BufferedInputStream(fileStream);
+//        OutputStream out = sendSocket.getOutputStream();
+//
+//
+//        int count;
+//        while ((count = fileBuffer.read(data)) > 0) {
+//            Log.d(TAG, "Data Sent : " + count);
+//            out.write(data, 0, count);
+//            out.flush();
+//        }
+//        out.close();
+//        fileBuffer.close();
+//        fileStream.close();
 
-        // Sending File Data
-        Log.d(TAG, "Sending file data...");
-        FileInputStream fileStream = new FileInputStream(file);
-        BufferedInputStream fileBuffer = new BufferedInputStream(fileStream);
-        OutputStream out = sendSocket.getOutputStream();
-        int count;
-        while ((count = fileBuffer.read(data)) > 0) {
-            Log.d(TAG, "Data Sent : " + count);
-            out.write(data, 0, count);
-            out.flush();
+        BufferedOutputStream out = new BufferedOutputStream(sendSocket.getOutputStream());
+        try (DataOutputStream d = new DataOutputStream(out)) {
+            d.writeUTF(file.getName());
+            Files.copy(file.toPath(), d);
         }
-        out.close();
-        fileBuffer.close();
-        fileStream.close();
     }
 
     /**
@@ -63,27 +75,34 @@ public class FileTransferUtils {
      *
      * @throws IOException
      */
-    public File receiveFile(String fileName, Socket receiveSocket) throws IOException {
+    public File receiveFile(String filePath, Socket receiveSocket) throws IOException {
         Log.d(TAG, "Now receiving file...");
-        Log.d(TAG, "File Name : " + fileName);
-        byte[] data = new byte[BUFFER_SIZE];
-        File file = new File(mContext.getExternalFilesDir(null), fileName);
-        FileOutputStream fileOut = new FileOutputStream(file);
-        InputStream fileIn = receiveSocket.getInputStream();
-        BufferedOutputStream fileBuffer = new BufferedOutputStream(fileOut);
-        int count;
-        int sum = 0;
-        while ((count = fileIn.read(data)) > 0) {
-            sum += count;
-            fileBuffer.write(data, 0, count);
-            Log.d(TAG, "Data received : " + sum);
-            fileBuffer.flush();
-        }
-        Log.d(TAG, "File Received...");
-        fileBuffer.close();
-        fileIn.close();
-        receiveSocket.close();
+        Log.d(TAG, "File Name : " + filePath);
+//        byte[] data = new byte[BUFFER_SIZE];
+//        File file = new File(mContext.getExternalFilesDir(null), fileName);
+//        FileOutputStream fileOut = new FileOutputStream(file);
+//        InputStream fileIn = receiveSocket.getInputStream();
+//        BufferedOutputStream fileBuffer = new BufferedOutputStream(fileOut);
+//        int count;
+//        int sum = 0;
+//        while ((count = fileIn.read(data)) > 0) {
+//            sum += count;
+//            fileBuffer.write(data, 0, count);
+//            Log.d(TAG, "Data received : " + sum);
+//            fileBuffer.flush();
+//        }
+//        Log.d(TAG, "File Received...");
+//        fileBuffer.close();
+//        fileIn.close();
+//        receiveSocket.close();
+//
+//        return file;
+        BufferedInputStream in = new BufferedInputStream(receiveSocket.getInputStream());
+        try (DataInputStream d = new DataInputStream(in)) {
+            String fileName = d.readUTF();
+            Files.copy(d, Paths.get(filePath, fileName));
 
-        return file;
+            return Paths.get(filePath, fileName).toFile();
+        }
     }
 }

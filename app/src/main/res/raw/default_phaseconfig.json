@@ -5,5 +5,5 @@
   "overheadNs": 200000,
   "minExposureNs": 33370000,
   "matchThresholdNs": 5000000,
-  "streamingPeriodFrames": 15
+  "streamingPeriodFrames": 30
 }

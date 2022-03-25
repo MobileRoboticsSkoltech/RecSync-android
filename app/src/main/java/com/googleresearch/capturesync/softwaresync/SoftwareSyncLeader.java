@@ -18,6 +18,9 @@ package com.googleresearch.capturesync.softwaresync;
 
 import android.util.Log;
 
+import com.googleresearch.capturesync.Frame;
+import com.googleresearch.capturesync.FrameInfo;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -64,8 +67,8 @@ public class SoftwareSyncLeader extends SoftwareSyncBase {
   private final SimpleNetworkTimeProtocol sntp;
 
   public SoftwareSyncLeader(
-      String name, long initialTime, InetAddress address, Map<Integer, RpcCallback> rpcCallbacks, FileTransferUtils fileUtils) {
-    this(name, new SystemTicker(), initialTime, address, rpcCallbacks, fileUtils);
+          String name, long initialTime, InetAddress address, Map<Integer, RpcCallback> rpcCallbacks, FileTransferUtils fileUtils, FrameInfo frameInfo) {
+    this(name, new SystemTicker(), initialTime, address, rpcCallbacks, fileUtils, frameInfo);
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
@@ -75,7 +78,8 @@ public class SoftwareSyncLeader extends SoftwareSyncBase {
           long initialTime,
           InetAddress address,
           Map<Integer, RpcCallback> rpcCallbacks,
-          FileTransferUtils fileUtils) {
+          FileTransferUtils fileUtils,
+          FrameInfo frameInfo) {
     // Note: Leader address is required to be the same as local address.
     super(name, localClock, address, address, fileUtils);
 
@@ -87,7 +91,6 @@ public class SoftwareSyncLeader extends SoftwareSyncBase {
     // For convenience, all devices could instead be shifted to the leader device UTC time,
     // ex. initialTimeNs = TimeUtils.millisToNanos(System.currentTimeMillis())
     setLeaderFromLocalNs(localClock.read() - initialTime);
-
     // Add client-specific RPC callbacks.
     rpcMap.put(
         SyncConstants.METHOD_HEARTBEAT,
@@ -112,7 +115,7 @@ public class SoftwareSyncLeader extends SoftwareSyncBase {
     staleClientChecker.scheduleAtFixedRate(
         this::removeStaleClients, 0, SyncConstants.STALE_TIME_NS, TimeUnit.NANOSECONDS);
 //
-    setStreamServer(new BasicStreamServer(fileUtils));
+    setStreamServer(new BasicStreamServer(fileUtils, frameInfo));
     getStreamServer().start();
   }
 
